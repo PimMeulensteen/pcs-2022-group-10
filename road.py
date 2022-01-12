@@ -11,5 +11,4 @@ class Road:
 
         deltaX = end[0] - start[0]
         deltaY = end[1] - start[1]
-        self.slope = "undefined" if deltaX == 0 else deltaY/deltaX
-        self.angle = -np.arctan2(deltaY, deltaX) * 180 / np.pi
+        self.angle = -np.arctan2(deltaY, deltaX)

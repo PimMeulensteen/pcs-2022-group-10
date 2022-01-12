@@ -23,9 +23,7 @@ WHITE = (255,255,255)
 GRAY = (128,128,128)
 
 
-
 def main():
-
     #Otherwise the window is immediatly closed
     while True:
 
@@ -43,6 +41,7 @@ def main():
     Draws the elements to the screen
 """
 def draw(roads):
+    screen.fill(0)
     draw_roads(roads)
     pygame.display.update()
 
@@ -56,12 +55,7 @@ def draw_roads(roads):
     for road in roads:
 
         #Get the perpendicular angle for the width of the road
-        if road.slope == 0:
-            perp = np.pi/2
-        elif road.slope == "undefined":
-            perp = 0
-        else:
-            perp = np.arctan(-1/road.slope)
+        perp = np.pi/2 - road.angle
 
         #width of the road
         w = 10
@@ -73,11 +67,15 @@ def draw_roads(roads):
         p3 = [x - y for x,y in zip(road.end, offset)]
         p4 = [x + y for x,y in zip(road.end, offset)]
 
+
         pygame.draw.polygon(screen, GRAY, [p1,p2,p3,p4])
 
-        #TO ADD
-        #Arrow to denote the direction of the road
 
+        #arrows that denote the direction
+        d = [w * np.cos(road.angle),w * -np.sin(road.angle)]
+        center = [x + y for x,y in zip(road.start, d)]
+        pygame.draw.line(screen, WHITE, p1, center, width = 5)
+        pygame.draw.line(screen, WHITE, p2, center, width = 5)
 
 
 if __name__ == "__main__":
