@@ -4,20 +4,20 @@ from car import *
 import sys
 import pygame
 
-#Sets the number of simulation frames per second
+# Sets the number of simulation frames per second
 FPS = 60
 clock = pygame.time.Clock()
 
 pygame.init()
 
-#Colors
+# Colors
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
 
-#Size and with of the pygame screen
+# Size and width of the pygame screen
 size = width, height = 500, 500
 screen = pygame.display.set_mode(size)
 
@@ -29,28 +29,41 @@ class Simulation:
         self.gen_random_data()
 
     def gen_random_data(self) -> None:
-        #Test roads
-        self.roads = [
-            Road([500, 230], [0, 230], 0),
-            Road([0, 270], [500, 270], 1),
-            Road([230, 0], [230, 500], 2),
-            Road([270, 500], [270, 0], 3)
-        ]
+        # Test roads
+        self.create_road([500, 230], [0, 230])
+        self.create_road([0, 270], [500, 270])
+        self.create_road([230, 0], [230, 500])
+        self.create_road([270, 500], [270, 0])
 
-        #Test cars
+        # Test cars
         self.cars = [
             Car(150, self.roads[0], RED),
             Car(200, self.roads[1], GREEN),
             Car(100, self.roads[2], BLUE),
-            Car(300, self.roads[3], WHITE)
+            Car(300, self.roads[3], WHITE),
         ]
+
+    def create_road(self, start, end):
+        """This method create a road object. It ensures that if the road
+        intersects with another road, it will split the current road and
+        the intersecting roads both into two new roads."""
+        new_road = Road(start, end)
+        self.roads.append(new_road)
+
+        # Check if the road intersects with another road.
+        # If so, split the roads (the new and the intersected road) into two.
+        for road in self.roads:
+            intersection = road.intersects(new_road)
+            if intersection:
+                self.create_road(road.split(intersection))
+                self.create_road(new_road.split(intersection))
 
     def step(self):
         clock.tick(FPS)
         self.simulate()
         self.draw()
 
-        #Close the window
+        # Close the window
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -65,56 +78,52 @@ class Simulation:
             self.cars.append(self.roads[0].get_random_car_at_start())
 
     def draw_roads(self):
-        """
-            Draws the roads correctly to the screen.
-        """
-        #loop through the roads and get the dimensions
+        """Draws the roads correctly to the screen."""
+        # loop through the roads and get the dimensions
         for road in self.roads:
 
-            #get the perpendicular angle for the width of the road
+            # get the perpendicular angle for the width of the road
             perp = np.pi / 2 + road.angle
 
-            #width of the road
+            # width of the road
             w = 10
             offset = [w * np.cos(perp), -w * np.sin(perp)]
 
-            #points to draw the rectangle
+            # points to draw the rectangle
             p1 = [x + y for x, y in zip(road.start, offset)]
             p2 = [x - y for x, y in zip(road.start, offset)]
             p3 = [x - y for x, y in zip(road.end, offset)]
             p4 = [x + y for x, y in zip(road.end, offset)]
 
-            #draw the road
+            # draw the road
             pygame.draw.polygon(screen, GRAY, [p1, p2, p3, p4])
 
-            #draw arrows that denote the direction
+            # draw arrows that denote the direction
             d = [w * np.cos(road.angle), w * -np.sin(road.angle)]
             center = [x + y for x, y in zip(road.start, d)]
             pygame.draw.line(screen, WHITE, p1, center, width=5)
             pygame.draw.line(screen, WHITE, p2, center, width=5)
 
     def draw_cars(self):
-        """
-            Draws the cars correctly to the screen.
-        """
+        """Draws the cars correctly to the screen."""
         for car in self.cars:
 
-            #get the perpendicular angle for the width of the car
+            # get the perpendicular angle for the width of the car
             perp = (car.dir + np.pi / 2) % (np.pi * 2)
 
-            #the width and length of the car in its proper orientation
+            # the width and length of the car in its proper orientation
             w = 8
             l = 16
             offsetw = [w * np.cos(perp), -w * np.sin(perp)]
             offsetl = [l * np.cos(car.dir), -l * np.sin(car.dir)]
 
-            #the corners of the car
+            # the corners of the car
             p1 = [x + y + z for x, y, z in zip(car.pos, offsetw, offsetl)]
             p2 = [x + y - z for x, y, z in zip(car.pos, offsetw, offsetl)]
             p3 = [x - y - z for x, y, z in zip(car.pos, offsetw, offsetl)]
             p4 = [x - y + z for x, y, z in zip(car.pos, offsetw, offsetl)]
 
-            #draw the car
+            # draw the car
             pygame.draw.polygon(screen, car.color, [p1, p2, p3, p4])
 
     def draw(self):
@@ -128,7 +137,7 @@ sim = Simulation()
 
 
 def main():
-    #Otherwise the window is immediatly closed
+    # Otherwise the window is immediately closed
     while True:
         sim.step()
 
