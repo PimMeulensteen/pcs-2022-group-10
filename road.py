@@ -23,7 +23,6 @@ class Road:
         # in pygame, y is going down, so we have to invert it
         self.angle = -np.arctan2(deltaY, deltaX)
 
-
     def intersects(self, other):
         """
         Check if the road intersects with the other road.
@@ -32,12 +31,29 @@ class Road:
         if self == other:
             return None
 
-        if self.angle == other.angle:
+        if (self.angle % np.pi) == (other.angle % np.pi):
             return None
 
-        # if self.start[0] <
-        raise NotImplementedError
+        xs1, ys1 = self.start[0], self.start[1]
+        xe1, ye1 = self.end[0], self.end[1]
+        xs2, ys2 = other.start[0], other.start[1]
+        xe2, ye2 = other.end[0], other.end[1]
 
+        # determine at what fraction of the (extended) line segments the
+        # intersection lies, fractions lie in the unit interval if it exists
+        selffrac = ((xs1 - xs2) * (ys2 - ye2) - (ys1 - ys2) * (xs2 - xe2)) / (
+            (xs1 - xe1) * (ys2 - ye2) - (ys1 - ye1) * (xs2 - xe2)
+        )
+
+        otherfrac = ((xs1 - xs2) * (ys1 - ye1) - (ys1 - ys2) * (xs1 - xe1)) / (
+            (xs1 - xe1) * (ys2 - ye2) - (ys1 - ye1) * (xs2 - xe2)
+        )
+
+        # check if the intersection lies on the line segments
+        if 0 <= selffrac <= 1 and 0 <= otherfrac <= 1:
+            return (xs1 + selffrac * (xe1 - xs1), ys1 + selffrac * (ye1 - ys1))
+        else:
+            return None
 
     def split_road(self, point) -> "Road":
         """
@@ -46,7 +62,6 @@ class Road:
         old_end = self.end
         self.end = point
         return Road(point, old_end)
-
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Road):
