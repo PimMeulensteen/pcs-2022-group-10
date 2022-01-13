@@ -16,6 +16,7 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
+YELLOW = (255, 255, 0)
 
 # Size and width of the pygame screen
 size = width, height = 500, 500
@@ -52,30 +53,35 @@ class Simulation:
 
         # Check if the road intersects with another road.
         # If so, split the roads (the new and the intersected road) into two.
-        for road in self.roads:
+        """for road in self.roads:
             intersection = road.intersects(new_road)
             if intersection:
                 self.create_road(road.split(intersection))
-                self.create_road(new_road.split(intersection))
+                self.create_road(new_road.split(intersection)) """
+
+    def create_car(self, road=None, random=False, speed=200, color=YELLOW):
+        """This method create a car object."""
+        if random == True:
+            speed = randint(200, 300)
+            road = self.roads[randint(0,len(self.roads)) - 1]
+            self.cars.append(Car(speed, road, color))
+        else:
+            self.cars.append(Car(speed,road, color))
+
 
     def step(self):
         clock.tick(FPS)
         self.simulate()
         self.draw()
 
-        # Close the window
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-
     def simulate(self):
         dt = clock.get_time() / 1000
         for car in self.cars:
             car.move(dt)
 
+        #Spawns random cars
         if randint(0, 40) == 0:
-            self.cars.append(self.roads[0].get_random_car_at_start())
+            self.create_car(random=True)
 
     def draw_roads(self):
         """Draws the roads correctly to the screen."""
@@ -140,6 +146,12 @@ def main():
     # Otherwise the window is immediately closed
     while True:
         sim.step()
+
+        # Close the window
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
 
 if __name__ == "__main__":
