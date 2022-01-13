@@ -26,6 +26,7 @@ class Simulation:
     def __init__(self) -> None:
         self.cars = []
         self.roads = []
+        self.gen_random_data()
 
     def gen_random_data(self) -> None:
         #Test roads
@@ -92,7 +93,7 @@ class Simulation:
             pygame.draw.line(screen, WHITE, p1, center, width=5)
             pygame.draw.line(screen, WHITE, p2, center, width=5)
 
-    def draw_cars():
+    def draw_cars(self):
         """
             Draws the cars correctly to the screen.
         """
