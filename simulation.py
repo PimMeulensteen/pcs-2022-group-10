@@ -60,7 +60,10 @@ class Simulation:
                 self.create_road(new_road.split(intersection)) """
 
     def create_car(self, road=None, random=False, speed=200, color=YELLOW):
-        """This method create a car object."""
+        """
+        This method create a car object. if random is True, it will have a
+        random speed and be on a random road.
+        """
         if random == True:
             speed = randint(200, 300)
             road = self.roads[randint(0,len(self.roads)) - 1]
@@ -77,14 +80,22 @@ class Simulation:
     def simulate(self):
         dt = clock.get_time() / 1000
         for car in self.cars:
+            car.change_speed(self.cars)
             car.move(dt)
+
+            #delete cars if they go of the screen
+            if car.on_screen(width, height) == False:
+                self.cars.remove(car)
+                del car
 
         #Spawns random cars
         if randint(0, 40) == 0:
             self.create_car(random=True)
 
     def draw_roads(self):
-        """Draws the roads correctly to the screen."""
+        """
+        Draws the roads correctly to the screen.
+        """
         # loop through the roads and get the dimensions
         for road in self.roads:
 
@@ -111,7 +122,9 @@ class Simulation:
             pygame.draw.line(screen, WHITE, p2, center, width=5)
 
     def draw_cars(self):
-        """Draws the cars correctly to the screen."""
+        """
+        Draws the cars correctly to the screen.
+        """
         for car in self.cars:
 
             # get the perpendicular angle for the width of the car

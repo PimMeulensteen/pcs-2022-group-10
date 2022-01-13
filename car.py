@@ -1,4 +1,6 @@
 from road import *
+from math import dist
+import numpy
 
 
 class Car:
@@ -14,6 +16,8 @@ class Car:
         # maybe one of you knows a fix
         self.pos = [road.start[0], road.start[1]]
 
+        self.road = road
+        self.progress = 0
         self.dir = road.angle
 
     def move(self, dt):
@@ -26,3 +30,26 @@ class Car:
 
         self.pos[0] += movx
         self.pos[1] += movy
+
+        #how far the car is along the road
+        self.progress = dist(self.pos, self.road.start) / self.road.length
+
+    def change_speed(self, cars):
+        """
+        Makes the car change its speed if the car in front is slower
+        """
+        for car in cars:
+            if car.progress > self.progress and car.road == self.road:
+                if dist(car.pos, self.pos) <= 50:
+                    self.speed -= 50/dist(car.pos, self.pos)
+                    self.speed = max(self.speed, 10)
+
+    def on_screen(self, width, height):
+        """
+        Finds out if a car is of screen and deletes it if it is.
+        """
+        if self.pos[0] < 0 or self.pos[0] > width:
+            return False
+        elif self.pos[1] < 0 or self.pos[1] > height:
+            return False
+        return True
