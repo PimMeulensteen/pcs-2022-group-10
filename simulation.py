@@ -24,10 +24,17 @@ screen = pygame.display.set_mode(size)
 
 
 class Simulation:
+    def step(self):
+        clock.tick(FPS)
+        self.simulate()
+        self.draw()
+
+
     def __init__(self) -> None:
         self.cars = []
         self.roads = []
         self.gen_random_data()
+
 
     def gen_random_data(self) -> None:
         # Test roads
@@ -37,12 +44,11 @@ class Simulation:
         self.create_road([270, 500], [270, 0])
 
         # Test cars
-        self.cars = [
-            Car(150, self.roads[0], RED),
-            Car(200, self.roads[1], GREEN),
-            Car(100, self.roads[2], BLUE),
-            Car(300, self.roads[3], WHITE),
-        ]
+        self.create_car(self.roads[0], False, 150, RED)
+        self.create_car(self.roads[1], False, 200,  GREEN)
+        self.create_car(self.roads[2], False, 100, BLUE)
+        self.create_car(self.roads[3], False, 300, WHITE)
+
 
     def create_road(self, start, end):
         """This method create a road object. It ensures that if the road
@@ -59,6 +65,7 @@ class Simulation:
                 self.create_road(road.split(intersection))
                 self.create_road(new_road.split(intersection)) """
 
+
     def create_car(self, road=None, random=False, speed=200, color=YELLOW):
         """
         This method create a car object. if random is True, it will have a
@@ -71,11 +78,6 @@ class Simulation:
         else:
             self.cars.append(Car(speed,road, color))
 
-
-    def step(self):
-        clock.tick(FPS)
-        self.simulate()
-        self.draw()
 
     def simulate(self):
         dt = clock.get_time() / 1000
@@ -91,6 +93,14 @@ class Simulation:
         #Spawns random cars
         if randint(0, 40) == 0:
             self.create_car(random=True)
+
+
+    def draw(self):
+        screen.fill(0)
+        self.draw_roads()
+        self.draw_cars()
+        pygame.display.update()
+
 
     def draw_roads(self):
         """
@@ -145,12 +155,6 @@ class Simulation:
             # draw the car
             pygame.draw.polygon(screen, car.color, [p1, p2, p3, p4])
 
-    def draw(self):
-        screen.fill(0)
-        self.draw_roads()
-        self.draw_cars()
-        pygame.display.update()
-
 
 sim = Simulation()
 
@@ -159,7 +163,6 @@ def main():
     # Otherwise the window is immediately closed
     while True:
         sim.step()
-
         # Close the window
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

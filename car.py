@@ -20,6 +20,7 @@ class Car:
         self.progress = 0
         self.dir = road.angle
 
+
     def move(self, dt):
         """
         Moves the car according to the timestep and its speed
@@ -34,6 +35,7 @@ class Car:
         #how far the car is along the road
         self.progress = dist(self.pos, self.road.start) / self.road.length
 
+
     def change_speed(self, cars):
         """
         Makes the car change its speed if the car in front is slower
@@ -44,7 +46,8 @@ class Car:
                     self.speed -= 50/dist(car.pos, self.pos)
                     self.speed = max(self.speed, 10)
 
-    def on_screen(self, width, height):
+
+    def on_screen(self, width, height) -> bool:
         """
         Finds out if a car is of screen and deletes it if it is.
         """
@@ -53,3 +56,10 @@ class Car:
         elif self.pos[1] < 0 or self.pos[1] > height:
             return False
         return True
+
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Car):
+            return self.road == other.road and self.speed == other.speed and\
+                   self.color == other.color and self.pos == other.pos
+        return False

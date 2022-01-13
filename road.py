@@ -23,6 +23,7 @@ class Road:
         # in pygame, y is going down, so we have to invert it
         self.angle = -np.arctan2(deltaY, deltaX)
 
+
     def intersects(self, other):
         """
         Check if the road intersects with the other road.
@@ -37,6 +38,7 @@ class Road:
         # if self.start[0] <
         raise NotImplementedError
 
+
     def split_road(self, point) -> "Road":
         """
         Splits the road in two at the given point.
@@ -45,7 +47,9 @@ class Road:
         self.end = point
         return Road(point, old_end)
 
+
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Road):
-            return False
-        return self.start == other.start and self.end == other.end
+        if isinstance(other, Road):
+            return self.start == other.start and self.end == other.end
+
+        return False
