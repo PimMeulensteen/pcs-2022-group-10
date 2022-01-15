@@ -34,10 +34,8 @@ class Road:
         if (self.angle % np.pi) == (other.angle % np.pi):
             return None
 
-        xs1, ys1 = self.start[0], self.start[1]
-        xe1, ye1 = self.end[0], self.end[1]
-        xs2, ys2 = other.start[0], other.start[1]
-        xe2, ye2 = other.end[0], other.end[1]
+        xs1, ys1, xe1, ye1 = self.start + self.end
+        xs2, ys2, xe2, ye2 = other.start + other.end
 
         # determine at what fraction of the (extended) line segments the
         # intersection lies, fractions lie in the unit interval if it exists

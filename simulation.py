@@ -29,12 +29,10 @@ class Simulation:
         self.simulate()
         self.draw()
 
-
     def __init__(self) -> None:
         self.cars = []
         self.roads = []
         self.gen_random_data()
-
 
     def gen_random_data(self) -> None:
         # Test roads
@@ -45,10 +43,9 @@ class Simulation:
 
         # Test cars
         self.create_car(self.roads[0], False, 150, RED)
-        self.create_car(self.roads[1], False, 200,  GREEN)
+        self.create_car(self.roads[1], False, 200, GREEN)
         self.create_car(self.roads[2], False, 100, BLUE)
         self.create_car(self.roads[3], False, 300, WHITE)
-
 
     def create_road(self, start, end):
         """This method create a road object. It ensures that if the road
@@ -65,7 +62,6 @@ class Simulation:
                 self.create_road(road.split(intersection))
                 self.create_road(new_road.split(intersection)) """
 
-
     def create_car(self, road=None, random=False, speed=200, color=YELLOW):
         """
         This method create a car object. if random is True, it will have a
@@ -73,11 +69,10 @@ class Simulation:
         """
         if random == True:
             speed = randint(200, 300)
-            road = self.roads[randint(0,len(self.roads)) - 1]
+            road = self.roads[randint(0, len(self.roads)) - 1]
             self.cars.append(Car(speed, road, color))
         else:
-            self.cars.append(Car(speed,road, color))
-
+            self.cars.append(Car(speed, road, color))
 
     def simulate(self):
         dt = clock.get_time() / 1000
@@ -85,22 +80,20 @@ class Simulation:
             car.change_speed(self.cars)
             car.move(dt)
 
-            #delete cars if they go of the screen
+            # delete cars if they go of the screen
             if car.on_screen(width, height) == False:
                 self.cars.remove(car)
                 del car
 
-        #Spawns random cars
+        # Spawns random cars
         if randint(0, 40) == 0:
             self.create_car(random=True)
-
 
     def draw(self):
         screen.fill(0)
         self.draw_roads()
         self.draw_cars()
         pygame.display.update()
-
 
     def draw_roads(self):
         """
