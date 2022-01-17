@@ -48,12 +48,12 @@ class Road:
         )
 
         # check if the intersection lies on the line segments
-        if 0 <= selffrac <= 1 and 0 <= otherfrac <= 1:
-            return (xs1 + selffrac * (xe1 - xs1), ys1 + selffrac * (ye1 - ys1))
+        if 0 < selffrac < 1 and 0 < otherfrac < 1:
+            return [xs1 + selffrac * (xe1 - xs1), ys1 + selffrac * (ye1 - ys1)]
         else:
             return None
 
-    def split_road(self, point) -> "Road":
+    def split_road(self, point):
         """
         Splits the road in two at the given point.
         """

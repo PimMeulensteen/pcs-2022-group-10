@@ -47,20 +47,23 @@ class Simulation:
         self.create_car(self.roads[2], False, 100, BLUE)
         self.create_car(self.roads[3], False, 300, WHITE)
 
-    def create_road(self, start, end):
+    def create_road(self, start=[0,0], end=[0,0], r=None):
         """This method create a road object. It ensures that if the road
         intersects with another road, it will split the current road and
         the intersecting roads both into two new roads."""
-        new_road = Road(start, end)
+        if r:
+            new_road = r
+        else:
+            new_road = Road(start, end)
         self.roads.append(new_road)
 
         # Check if the road intersects with another road.
         # If so, split the roads (the new and the intersected road) into two.
-        """for road in self.roads:
+        for road in self.roads:
             intersection = road.intersects(new_road)
             if intersection:
-                self.create_road(road.split(intersection))
-                self.create_road(new_road.split(intersection)) """
+                self.create_road(r=road.split_road(intersection))
+                self.create_road(r=new_road.split_road(intersection))
 
     def create_car(self, road=None, random=False, speed=200, color=YELLOW):
         """
