@@ -32,14 +32,15 @@ class Simulation:
     def __init__(self) -> None:
         self.cars = []
         self.roads = []
+        self.startroads = []
         self.gen_random_data()
 
     def gen_random_data(self) -> None:
         # Test roads
-        self.create_road([500, 230], [0, 230])
-        self.create_road([0, 270], [500, 270])
-        self.create_road([230, 0], [230, 500])
-        self.create_road([270, 500], [270, 0])
+        self.create_road([500, 230], [0, 230], gen=True)
+        self.create_road([0, 270], [500, 270], gen=True)
+        self.create_road([230, 0], [230, 500], gen=True)
+        self.create_road([270, 500], [270, 0], gen=True)
 
         # Test cars
         self.create_car(self.roads[0], False, 150, RED)
@@ -47,7 +48,7 @@ class Simulation:
         self.create_car(self.roads[2], False, 100, BLUE)
         self.create_car(self.roads[3], False, 300, WHITE)
 
-    def create_road(self, start=[0, 0], end=[0, 0], r=None):
+    def create_road(self, start=[0, 0], end=[0, 0], r=None, gen=False):
         """This method create a road object. It ensures that if the road
         intersects with another road, it will split the current road and
         the intersecting roads both into two new roads."""
@@ -56,6 +57,10 @@ class Simulation:
         else:
             new_road = Road(start, end)
         self.roads.append(new_road)
+
+        # Mark roads where cars can generate (at the start coordinates)
+        if gen:
+            self.startroads.append(new_road)
 
         # Check if the road intersects with another road.
         # If so, split the roads (the new and the intersected road) into two.
@@ -72,7 +77,7 @@ class Simulation:
         """
         if random == True:
             speed = randint(200, 300)
-            road = self.roads[randint(0, len(self.roads)) - 1]
+            road = self.startroads[randint(0, len(self.startroads)) - 1]
             self.cars.append(Car(speed, road, color))
         else:
             self.cars.append(Car(speed, road, color))
