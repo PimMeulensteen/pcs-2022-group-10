@@ -47,7 +47,7 @@ class Simulation:
         self.create_car(self.roads[2], False, 100, BLUE)
         self.create_car(self.roads[3], False, 300, WHITE)
 
-    def create_road(self, start=[0,0], end=[0,0], r=None):
+    def create_road(self, start=[0, 0], end=[0, 0], r=None):
         """This method create a road object. It ensures that if the road
         intersects with another road, it will split the current road and
         the intersecting roads both into two new roads."""
@@ -123,9 +123,12 @@ class Simulation:
 
             # draw arrows that denote the direction
             d = [w * np.cos(road.angle), w * -np.sin(road.angle)]
-            center = [x + y for x, y in zip(road.start, d)]
-            pygame.draw.line(screen, WHITE, p1, center, width=5)
-            pygame.draw.line(screen, WHITE, p2, center, width=5)
+            shift = [32 * (y - x) / 64 for x, y in zip(road.start, road.end)]
+            center = [x + y + (z / 2) for x, y, z in zip(road.start, shift, d)]
+            p1s = [x + y - (z / 2) for x, y, z in zip(p1, shift, d)]
+            p2s = [x + y - (z / 2) for x, y, z in zip(p2, shift, d)]
+            pygame.draw.line(screen, WHITE, p1s, center, width=5)
+            pygame.draw.line(screen, WHITE, p2s, center, width=5)
 
     def draw_cars(self):
         """
