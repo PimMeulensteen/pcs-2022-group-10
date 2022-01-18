@@ -1,6 +1,6 @@
 from road import *
 from math import dist
-import numpy
+from random import choice
 
 
 class Car:
@@ -35,16 +35,38 @@ class Car:
         #how far the car is along the road
         self.progress = dist(self.pos, self.road.start) / self.road.length
 
+        #change road if necessary
+        self.change_road()
+
+    def change_road(self):
+        """
+        Makes the cars change roads if there is a road to change to and
+        the current road has ended.
+        """
+        if self.progress > 1:
+            if len(self.road.children) == 0:
+                return 0
+            self.road = choice(self.road.children)
+            self.pos = [self.road.start[0], self.road.start[1]]
+            self.progress = 0
+            self.dir = self.road.angle
+        return 0
 
     def change_speed(self, cars):
         """
         Makes the car change its speed if the car in front is slower
+        """
+
+        #Werkt erg slecht, moeten we nog doen
         """
         for car in cars:
             if car.progress > self.progress and car.road == self.road:
                 if dist(car.pos, self.pos) <= 50:
                     self.speed -= 50/dist(car.pos, self.pos)
                     self.speed = max(self.speed, 10)
+        """
+
+        pass
 
 
     def on_screen(self, width, height) -> bool:

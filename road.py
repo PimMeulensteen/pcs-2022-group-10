@@ -16,6 +16,8 @@ class Road:
         """
         self.start = start
         self.end = end
+        self.parents = []
+        self.children = []
 
         deltaX = end[0] - start[0]
         deltaY = end[1] - start[1]
@@ -59,6 +61,11 @@ class Road:
         """
         old_end = self.end
         self.end = point
+
+        deltaX = self.end[0] - self.start[0]
+        deltaY = self.end[1] - self.start[1]
+        self.length = np.sqrt(deltaX ** 2 + deltaY ** 2)
+
         return Road(point, old_end)
 
     def __eq__(self, other: object) -> bool:

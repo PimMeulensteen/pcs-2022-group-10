@@ -41,6 +41,7 @@ class Simulation:
         self.create_road([0, 270], [500, 270], gen=True)
         self.create_road([230, 0], [230, 500], gen=True)
         self.create_road([270, 500], [270, 0], gen=True)
+        self.create_tree()
 
         # Test cars
         self.create_car(self.roads[0], False, 150, RED)
@@ -69,6 +70,30 @@ class Simulation:
             if intersection:
                 self.create_road(r=road.split_road(intersection))
                 self.create_road(r=new_road.split_road(intersection))
+
+    def create_tree(self):
+        """
+        This gives every road their children and parents,
+        so where the cars could come from and where they can go
+        """
+        #At first we get the roads with no parents
+        to_check = self.startroads.copy()
+        visited = []
+        while len(to_check) > 0:
+            for end_road in self.roads:
+
+                #If a end_road is a child of to_check[0], we add it to its
+                #children and add to_check[0] to end_road's parents.
+                if to_check[0].end == end_road.start:
+                    to_check[0].children.append(end_road)
+                    end_road.parents.append(to_check[0])
+                    #If we have not checked end_road, add it to the roads we
+                    #need to check
+                    if end_road not in visited:
+                        to_check.append(end_road)
+
+            visited.append(to_check.pop(0))
+
 
     def create_car(self, road=None, random=False, speed=200, color=YELLOW):
         """
