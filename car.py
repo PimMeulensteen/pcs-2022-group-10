@@ -1,16 +1,25 @@
 from road import *
 from math import dist
 from random import choice
+import numpy as np
 
 
 class Car:
-    def __init__(self, speed, road, color):
+    def __init__(self, max, road, color):
         """
         Sets the start parameters:
         speed, color, position and direction
         """
-        self.speed = speed
+        self.max = max
+        self.speed = max
         self.color = color
+
+
+        self.reaction = 0
+        self.delta = 4
+        self.a = 0
+        self.max_a = 70
+        self.max_brake = 100
 
         # otherwise pass by reference
         # maybe one of you knows a fix
@@ -52,21 +61,42 @@ class Car:
             self.dir = self.road.angle
         return 0
 
-    def change_speed(self, cars):
+    def change_speed(self, cars, dt):
         """
         Makes the car change its speed if the car in front is slower
         """
-
-        #Werkt erg slecht, moeten we nog doen
-        """
+        nearest = None
         for car in cars:
-            if car.progress > self.progress and car.road == self.road:
-                if dist(car.pos, self.pos) <= 50:
-                    self.speed -= 50/dist(car.pos, self.pos)
-                    self.speed = max(self.speed, 10)
-        """
 
-        pass
+            n_p = nearest.progress if nearest else 1
+
+            #check if car is behind another car
+            if car.progress > self.progress and car.road == self.road and car.progress <= n_p:
+                nearest = car
+
+                speed_div = np.abs(self.speed - car.speed)
+                distance= np.abs(self.progress * self.road.length - car.progress * car.road.length)
+
+                #get the desired distance to the car in front
+                min_des_dist = 30
+                react_dist = self.speed * self.reaction
+                des_dist = min_des_dist + react_dist +\
+                           (self.speed * speed_div) /\
+                           (2 * np.sqrt(self.max_a * self.max_brake))
+
+                #get the acceleration
+                self.a = self.max_a * (1-(self.speed/self.max) ** self.delta\
+                    -(des_dist/distance) ** 2)
+
+        #if there is no car in front, accelerate to the max
+        if not nearest:
+            self.a = self.max_a * (1-(self.speed/self.max) ** self.delta)
+
+        #Eulers method
+        self.speed += self.a * dt
+
+        #Cap speed at the max
+        self.speed = min(self.speed, self.max)
 
 
     def on_screen(self, width, height) -> bool:

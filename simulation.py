@@ -33,6 +33,7 @@ class Simulation:
         self.cars = []
         self.roads = []
         self.startroads = []
+        self.timer = 0
         self.gen_random_data()
 
     def gen_random_data(self) -> None:
@@ -45,9 +46,9 @@ class Simulation:
 
         # Test cars
         self.create_car(self.roads[0], False, 150, RED)
-        self.create_car(self.roads[1], False, 200, GREEN)
-        self.create_car(self.roads[2], False, 100, BLUE)
-        self.create_car(self.roads[3], False, 300, WHITE)
+        self.create_car(self.roads[1], False, 100, GREEN)
+        self.create_car(self.roads[2], False, 140, BLUE)
+        self.create_car(self.roads[3], False, 120, WHITE)
 
     def create_road(self, start=[0, 0], end=[0, 0], r=None, gen=False):
         """This method create a road object. It ensures that if the road
@@ -101,16 +102,17 @@ class Simulation:
         random speed and be on a random road.
         """
         if random == True:
-            speed = randint(200, 300)
+            speed = randint(100, 150)
             road = self.startroads[randint(0, len(self.startroads)) - 1]
             self.cars.append(Car(speed, road, color))
         else:
             self.cars.append(Car(speed, road, color))
 
     def simulate(self):
+        self.timer += 1
         dt = clock.get_time() / 1000
         for car in self.cars:
-            car.change_speed(self.cars)
+            car.change_speed(self.cars, dt)
             car.move(dt)
 
             # delete cars if they go of the screen
@@ -119,8 +121,10 @@ class Simulation:
                 del car
 
         # Spawns random cars
-        if randint(0, 40) == 0:
+        last_car = 0
+        if randint(0, 40) == 0 and self.timer - last_car > 30:
             self.create_car(random=True)
+            last_car = self.timer
 
     def draw(self):
         screen.fill(0)
