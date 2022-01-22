@@ -100,7 +100,7 @@ class Car:
                 )
 
                 # get the desired distance to the car in front
-                min_des_dist = 30
+                min_des_dist = 40
                 react_dist = self.speed * self.reaction
                 des_dist = (
                     min_des_dist
@@ -116,9 +116,23 @@ class Car:
                     - (des_dist / distance) ** 2
                 )
 
+                # if too close to car in front, brake
+                if distance < des_dist:
+                    self.a = 0
+                    self.speed = 0
+
         # if there is no car in front, accelerate to the max
         if not nearest:
             self.a = self.max_a * (1 - (self.speed / self.max) ** self.delta)
+
+        # if at a red light, decelerate to a stop
+        if (
+            not nearest
+            and (self.road.green == False)
+            and (0.85 < self.progress < 1)
+        ):
+            self.a = 0 * (1 - (self.speed / self.max) ** self.delta)
+            self.speed = 0
 
         # Eulers method
         self.speed += self.a * dt

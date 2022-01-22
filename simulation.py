@@ -45,6 +45,7 @@ class Simulation:
         self.create_road([230, 0], [230, 500])
         self.create_road([270, 500], [270, 0])
         self.network.add_roads(self.roads)
+        self.set_trafficlights()
 
         # Test cars
         self.create_car([self.roads[0]], False, 150, RED)
@@ -70,6 +71,13 @@ class Simulation:
                 self.create_road(r=road.split_road(intersection))
                 self.create_road(r=new_road.split_road(intersection))
 
+    def set_trafficlights(self):
+        """
+        Set the traffic light to red, for each incoming road.
+        """
+        for road in self.network.in_roads:
+            road.green = False
+
     def create_car(self, path=None, random=False, speed=200, color=YELLOW):
         """
         This method create a car object. if random is True, it will have a
@@ -83,6 +91,11 @@ class Simulation:
             self.cars.append(Car(speed, path, color))
 
     def simulate(self):
+        """
+        Simulate a small step of traffic flow.
+        """
+        self.switch_trafficlights()
+
         self.timer += 1
         dt = clock.get_time() / 1000
         for car in self.cars:
@@ -99,6 +112,16 @@ class Simulation:
         if randint(0, 50) == 0 and self.timer - last_car > 50:
             self.create_car(random=True)
             last_car = self.timer
+
+    def switch_trafficlights(self):
+        """
+        Switch traffic lights every 100 steps.
+        """
+        if (self.timer % 300) == 0:
+            prev = ((self.timer - 1) // 300) % len(self.network.in_roads)
+            next = (self.timer // 300) % len(self.network.in_roads)
+            self.network.in_roads[prev].green = False
+            self.network.in_roads[next].green = True
 
     def draw(self):
         screen.fill(0)
