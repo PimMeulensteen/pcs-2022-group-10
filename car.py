@@ -10,7 +10,7 @@ import numpy as np
 
 
 class Car:
-    def __init__(self, max_speed, road, color):
+    def __init__(self, max_speed, path, color):
         """
         Sets the start parameters:
         speed, color, position and direction
@@ -25,13 +25,16 @@ class Car:
         self.max_a = 70
         self.max_brake = 100
 
+        self.path = path
+        self.index = 0
+        self.road = self.path[0]
+
         # otherwise pass by reference
         # maybe one of you knows a fix
-        self.pos = [road.start[0], road.start[1]]
+        self.pos = [self.road.start[0], self.road.start[1]]
 
-        self.road = road
         self.progress = 0
-        self.dir = road.angle
+        self.dir = self.road.angle
 
     def move(self, dt):
         """
@@ -48,7 +51,8 @@ class Car:
         self.progress = dist(self.pos, self.road.start) / self.road.length
 
         # change road if necessary
-        self.change_road()
+        done = self.change_road()
+        return done
 
     def change_road(self):
         """
@@ -56,9 +60,11 @@ class Car:
         the current road has ended.
         """
         if self.progress > 1:
-            if len(self.road.children) == 0:
-                return 0
-            self.road = choice(self.road.children)
+            self.index += 1
+            if self.index >= len(self.path):
+                return 1
+
+            self.road = self.path[self.index]
             self.pos = [self.road.start[0], self.road.start[1]]
             self.progress = 0
             self.dir = self.road.angle

@@ -1,5 +1,6 @@
 from road import *
 from car import *
+from network import *
 
 import sys
 import pygame
@@ -32,25 +33,26 @@ class Simulation:
     def __init__(self) -> None:
         self.cars = []
         self.roads = []
+        self.network = Network()
         self.startroads = []
         self.timer = 0
         self.gen_random_data()
 
     def gen_random_data(self) -> None:
         # Test roads
-        self.create_road([500, 230], [0, 230], gen=True)
-        self.create_road([0, 270], [500, 270], gen=True)
-        self.create_road([230, 0], [230, 500], gen=True)
-        self.create_road([270, 500], [270, 0], gen=True)
-        self.create_tree()
+        self.create_road([500, 230], [0, 230])
+        self.create_road([0, 270], [500, 270])
+        self.create_road([230, 0], [230, 500])
+        self.create_road([270, 500], [270, 0])
+        self.network.add_roads(self.roads)
 
         # Test cars
-        self.create_car(self.roads[0], False, 150, RED)
-        self.create_car(self.roads[1], False, 100, GREEN)
-        self.create_car(self.roads[2], False, 140, BLUE)
-        self.create_car(self.roads[3], False, 120, WHITE)
+        self.create_car([self.roads[0]], False, 150, RED)
+        self.create_car([self.roads[1]], False, 100, GREEN)
+        self.create_car([self.roads[2]], False, 140, BLUE)
+        self.create_car([self.roads[7]], False, 120, WHITE)
 
-    def create_road(self, start=[0, 0], end=[0, 0], r=None, gen=False):
+    def create_road(self, start=[0, 0], end=[0, 0], r=None):
         """This method create a road object. It ensures that if the road
         intersects with another road, it will split the current road and
         the intersecting roads both into two new roads."""
@@ -60,10 +62,6 @@ class Simulation:
             new_road = Road(start, end)
         self.roads.append(new_road)
 
-        # Mark roads where cars can generate (at the start coordinates)
-        if gen:
-            self.startroads.append(new_road)
-
         # Check if the road intersects with another road.
         # If so, split the roads (the new and the intersected road) into two.
         for road in self.roads:
@@ -72,57 +70,33 @@ class Simulation:
                 self.create_road(r=road.split_road(intersection))
                 self.create_road(r=new_road.split_road(intersection))
 
-    def create_tree(self):
-        """
-        This gives every road their children and parents,
-        so where the cars could come from and where they can go
-        """
-        #At first we get the roads with no parents
-        to_check = self.startroads.copy()
-        visited = []
-        while len(to_check) > 0:
-            for end_road in self.roads:
-
-                #If a end_road is a child of to_check[0], we add it to its
-                #children and add to_check[0] to end_road's parents.
-                if to_check[0].end == end_road.start:
-                    to_check[0].children.append(end_road)
-                    end_road.parents.append(to_check[0])
-                    #If we have not checked end_road, add it to the roads we
-                    #need to check
-                    if end_road not in visited:
-                        to_check.append(end_road)
-
-            visited.append(to_check.pop(0))
-
-
-    def create_car(self, road=None, random=False, speed=200, color=YELLOW):
+    def create_car(self, path=None, random=False, speed=200, color=YELLOW):
         """
         This method create a car object. if random is True, it will have a
         random speed and be on a random road.
         """
         if random == True:
             speed = randint(100, 150)
-            road = self.startroads[randint(0, len(self.startroads)) - 1]
-            self.cars.append(Car(speed, road, color))
+            path = self.network.paths[randint(0, len(self.network.paths)) - 1]
+            self.cars.append(Car(speed, path, color))
         else:
-            self.cars.append(Car(speed, road, color))
+            self.cars.append(Car(speed, path, color))
 
     def simulate(self):
         self.timer += 1
         dt = clock.get_time() / 1000
         for car in self.cars:
             car.change_speed(self.cars, dt)
-            car.move(dt)
+            done = car.move(dt)
 
-            # delete cars if they go of the screen
-            if car.on_screen(width, height) == False:
+            # Delete cars if they are at the end of their path
+            if done:
                 self.cars.remove(car)
                 del car
 
         # Spawns random cars
         last_car = 0
-        if randint(0, 40) == 0 and self.timer - last_car > 30:
+        if randint(0, 50) == 0 and self.timer - last_car > 50:
             self.create_car(random=True)
             last_car = self.timer
 

@@ -16,7 +16,7 @@ class Road:
         """
         self.start = start
         self.end = end
-        self.parents = []
+
         self.children = []
 
         deltaX = end[0] - start[0]
