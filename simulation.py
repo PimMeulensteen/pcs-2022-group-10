@@ -68,8 +68,12 @@ class Simulation:
         for road in self.roads:
             intersection = road.intersects(new_road)
             if intersection:
-                self.create_road(r=road.split_road(intersection))
-                self.create_road(r=new_road.split_road(intersection))
+                r1 = road.split_road(intersection)
+                r2 = new_road.split_road(intersection)
+                if r1:
+                    self.create_road(r=r1)
+                if r2:
+                    self.create_road(r=r2)
 
     def set_trafficlights(self):
         """

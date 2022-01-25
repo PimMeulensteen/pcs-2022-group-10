@@ -52,7 +52,7 @@ class Road:
         )
 
         # check if the intersection lies on the line segments
-        if 0 < selffrac < 1 and 0 < otherfrac < 1:
+        if 0 <= selffrac <= 1 and 0 <= otherfrac <= 1:
             return [xs1 + selffrac * (xe1 - xs1), ys1 + selffrac * (ye1 - ys1)]
         else:
             return None
@@ -61,6 +61,11 @@ class Road:
         """
         Splits the road in two at the given point.
         """
+
+        #if the split point is at the start or end, the road is not split.
+        if self.start == point or self.end == point:
+            return None
+
         old_end = self.end
         self.end = point
 
