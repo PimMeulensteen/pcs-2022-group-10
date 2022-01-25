@@ -93,52 +93,59 @@ class Car:
             if is_behind_other_car(other_car):
                 nearest = other_car
 
-                speed_div = np.abs(self.speed - other_car.speed)
-                distance = np.abs(
-                    self.progress * self.road.length
-                    - other_car.progress * other_car.road.length
+                self.decelerate(
+                    other_car.speed, other_car.progress, other_car.road.length
                 )
-
-                # get the desired distance to the car in front
-                min_des_dist = 40
-                react_dist = self.speed * self.reaction
-                des_dist = (
-                    min_des_dist
-                    + react_dist
-                    + (self.speed * speed_div)
-                    / (2 * np.sqrt(self.max_a * self.max_brake))
-                )
-
-                # get the acceleration
-                self.a = self.max_a * (
-                    1
-                    - (self.speed / self.max) ** self.delta
-                    - (des_dist / distance) ** 2
-                )
-
-                # if too close to car in front, brake
-                if distance < des_dist:
-                    self.a = 0
-                    self.speed = 0
 
         # if there is no car in front, accelerate to the max
         if not nearest:
             self.a = self.max_a * (1 - (self.speed / self.max) ** self.delta)
 
         # if at a red light, decelerate to a stop
-        if (
-            not nearest
-            and (self.road.green == False)
-            and (0.85 < self.progress < 1)
-        ):
-            self.a = 0 * (1 - (self.speed / self.max) ** self.delta)
-            self.speed = 0
+        if (not nearest) and (self.road.green == False):
+            if 0.65 < self.progress < 0.85:
+                self.decelerate(0, 0.85, self.road.length, min_des_dist=0)
+            elif 0.85 < self.progress < 0.9:
+                self.a = 0
+                self.speed = 0
 
         # Eulers method
         self.speed += self.a * dt
 
         # Cap speed at the max
         self.speed = min(self.speed, self.max)
+
+    def decelerate(self, aim_speed, aim_progr, aim_roadlen, min_des_dist=40):
+        """
+        Decelerate according to a desired speed and where on the road this
+        should be reached. For example: can be used to decelerate according
+        to a car in front, or to decelerate when approaching a red light.
+        """
+        speed_div = np.abs(self.speed - aim_speed)
+        distance = np.abs(
+            self.progress * self.road.length - aim_progr * aim_roadlen
+        )
+
+        # get the desired distance to the car in front
+        react_dist = self.speed * self.reaction
+        des_dist = (
+            min_des_dist
+            + react_dist
+            + (self.speed * speed_div)
+            / (2 * np.sqrt(self.max_a * self.max_brake))
+        )
+
+        # get the acceleration
+        self.a = self.max_a * (
+            1
+            - (self.speed / self.max) ** self.delta
+            - (des_dist / distance) ** 2
+        )
+
+        # if too close to car in front or desired point is reached, brake
+        if distance < des_dist:
+            self.a = 0
+            self.speed = 0
 
     def on_screen(self, width, height) -> bool:
         """

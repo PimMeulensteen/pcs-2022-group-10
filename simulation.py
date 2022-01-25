@@ -48,10 +48,10 @@ class Simulation:
         self.set_trafficlights()
 
         # Test cars
-        self.create_car([self.roads[0]], False, 150, RED)
-        self.create_car([self.roads[1]], False, 100, GREEN)
-        self.create_car([self.roads[2]], False, 140, BLUE)
-        self.create_car([self.roads[7]], False, 120, WHITE)
+        # self.create_car([self.roads[0]], False, 150, RED)
+        # self.create_car([self.roads[1]], False, 100, GREEN)
+        # self.create_car([self.roads[2]], False, 140, BLUE)
+        # self.create_car([self.roads[7]], False, 120, WHITE)
 
     def create_road(self, start=[0, 0], end=[0, 0], r=None):
         """This method create a road object. It ensures that if the road
