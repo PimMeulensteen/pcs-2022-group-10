@@ -1,3 +1,6 @@
+from numpy import infty
+
+
 class Network:
     """
     Defines a network of roads.
@@ -70,28 +73,54 @@ class Network:
     def find_paths(self):
         """
         Finds the shortest paths from any incoming road to any outgoing road.
-        This is done with a BFS. See the wikipedia pseudocode.
+        This is done with a Dijkstra's algorithm. See the wikipedia pseudocode
+        for more comments.
         """
+        # We loop over every start and end to get every possible path
         for start in self.in_roads:
             for end in self.out_roads:
-                # Because we want the whole path, put the paths in the queue
-                # instead of only the last element.
-                Q = [[start]]
-                explored = [start]
-                found = False
+
+                # Set the distance to every road to infinity, except for start
+                dist = [infty] * len(self.roads)
+                dist[self.roads.index(start)] = 0
+
+                #previous road in the shortest path
+                prev = [None] * len(self.roads)
+
+                # Roads we have to check
+                Q = [road for road in self.roads]
+
                 while len(Q) > 0:
-                    p = Q.pop(0)
+                    # Set u as the road we need to check with the shortest
+                    # distance and remove it from Q
+                    Q_dist = [dist[self.roads.index(x)] for x in Q]
+                    u = Q[Q_dist.index(min(Q_dist))]
+                    Q.remove(u)
 
-                    if p[-1] == end:
-                        self.paths.append(p)
-                        found = True
 
-                    # If a shortest path is found, do not add longer paths
-                    if found == True:
-                        continue
+                    # Stop if we reach the end
+                    if u == end:
+                        break
 
-                    for child in p[-1].children:
-                        if child not in explored:
-                            explored.append(child)
-                            # Add the extended path to the queue
-                            Q.append(p + [child])
+                    for child in u.children:
+                        # Only check the children which weren't checked before
+                        if child in Q:
+                            u_index = self.roads.index(u)
+                            c_index = self.roads.index(child)
+
+                            # Change the distance and previous if the distance
+                            # from u is smaller then from previous
+                            alt = dist[u_index] + u.length
+                            if alt < dist[c_index]:
+                                dist[c_index] = alt
+                                prev[c_index] = u
+
+                # Work backwards from the end to find the path
+                S = []
+                u = end
+                if prev[self.roads.index(u)] or u == start:
+                    while u:
+                        S.insert(0, u)
+                        u = prev[self.roads.index(u)]
+
+                self.paths.append(S)
