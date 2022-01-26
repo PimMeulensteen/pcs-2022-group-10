@@ -36,7 +36,20 @@ class Car:
         self.dir = self.road.angle
 
     def cur_polution(self):
-        return 1
+        # These valeus are for CO emissions. The values are in mg/sec, and based on the pape
+        # "On Road Measurements of Vehicle Tailpipe Emissions" by Frey et al.
+        # TODO make this more general
+        if self.speed < 10:
+            # We consider speeds less than 10 km/h as idle
+            return 1.5
+
+        if self.a > 0:
+            return 23
+
+        if self.a < 0:
+            return 5.5
+
+        return 11
 
     def gen_polution(self, dt):
         """
