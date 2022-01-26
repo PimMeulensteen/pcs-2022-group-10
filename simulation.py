@@ -50,6 +50,8 @@ class PolutionMap:
 
 class Simulation:
     def __init__(self) -> None:
+        self.avg_FPS = 0
+        self.frames = 0
         self.cars = []
         self.roads = []
         self.network = Network()
@@ -73,7 +75,7 @@ class Simulation:
         self.set_trafficlights()
 
         # Test cars
-        # self.create_car([self.roads[0]], False, 150, RED)
+        #self.create_car([self.roads[0]], False, 150, RED)
         # self.create_car([self.roads[1]], False, 100, GREEN)
         # self.create_car([self.roads[2]], False, 140, BLUE)
         # self.create_car([self.roads[7]], False, 120, WHITE)
@@ -115,9 +117,9 @@ class Simulation:
         if random == True:
             speed = randint(100, 150)
             path = self.network.paths[randint(0, len(self.network.paths)) - 1]
-            self.cars.append(Car(speed, path, color))
+            self.cars.append(Car(speed, path, color, self.roads))
         else:
-            self.cars.append(Car(speed, path, color))
+            self.cars.append(Car(speed, path, color, self.roads))
 
     def simulate(self):
         """
@@ -125,23 +127,26 @@ class Simulation:
         """
         self.switch_trafficlights()
 
+        self.frames += 1
         self.timer += 1
         dt = clock.get_time() / 1000
+        self.avg_FPS = (self.avg_FPS * (self.frames - 1) + dt) / self.frames
+        print(self.avg_FPS)
+
         for car in self.cars:
-            car.change_speed(self.cars, dt)
-            done = car.move(dt)
+            car.change_speed(dt)
+            done = car.move(dt, self.roads)
             self.pol_map.add_polution(*car.gen_polution(dt))
 
             # Delete cars if they are at the end of their path
-            if done:
+            if done == True:
                 self.cars.remove(car)
                 del car
 
+
         # Spawns random cars
-        last_car = 0
-        if randint(0, 50) == 0 and self.timer - last_car > 50:
+        if randint(0, 50) == 0 :
             self.create_car(random=True)
-            last_car = self.timer
 
     def switch_trafficlights(self):
         """

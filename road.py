@@ -20,6 +20,7 @@ class Road:
         self.green = True
 
         self.children = []
+        self.cars = []
 
         deltaX = end[0] - start[0]
         deltaY = end[1] - start[1]

@@ -9,7 +9,7 @@ import numpy as np
 
 
 class Car:
-    def __init__(self, max_speed, path, color):
+    def __init__(self, max_speed, path, color, roads):
         """
         Sets the start parameters:
         speed, color, position and direction
@@ -27,6 +27,15 @@ class Car:
         self.path = path
         self.index = 0
         self.road = self.path[0]
+
+        # If there are cars on the road, the most recent one is the closest
+        if len(roads[roads.index(self.road)].cars) > 0:
+            self.in_front = roads[roads.index(self.road)].cars[-1]
+        else:
+            self.in_front = None
+
+        roads[roads.index(self.road)].cars.append(self)
+
 
         # otherwise pass by reference
         # maybe one of you knows a fix
@@ -57,66 +66,72 @@ class Car:
         """
         return self.pos[0], self.pos[1], self.cur_polution()
 
-    def move(self, dt):
+    def move(self, dt, roads):
         """
         Moves the car according to the timestep and its speed
         """
-        movx = np.cos(self.dir) * self.speed * dt
-        # in pygame, y is going down, so we have to invert it
-        movy = -np.sin(self.dir) * self.speed * dt
+        # In pygame, y is going down, so we have to invert it
+        self.pos[0] += np.cos(self.dir) * self.speed * dt
+        self.pos[1] += -np.sin(self.dir) * self.speed * dt
 
-        self.pos[0] += movx
-        self.pos[1] += movy
-
-        # how far the car is along the road
+        # How far the car is along the road
         self.progress = dist(self.pos, self.road.start) / self.road.length
 
-        # change road if necessary
-        done = self.change_road()
-        return done
+        # If the car is at the end of the path, we want to remove it
+        if self.progress > 1 and self.index >= len(self.path) - 1:
+            roads[roads.index(self.road)].cars.remove(self)
+            return True
 
-    def change_road(self):
+        # If the car is at the end of the road, change the road
+        if self.progress > 1:
+            self.index += 1
+            self.change_road(roads)
+
+        # If the car in front has moved to a different road, remove it
+        if self.in_front:
+            if self.in_front.road != self.road:
+                self.in_front = None
+            # If the car in front has ended, remove it
+            elif self.in_front.index == len(self.path) - 1:
+                if self.in_front not in roads[roads.index(self.road)].cars:
+                    self.in_front = None
+
+
+        return False
+
+    def change_road(self, roads):
         """
         Makes the cars change roads if there is a road to change to and
         the current road has ended.
         """
         if self.progress > 1:
-            self.index += 1
-            if self.index >= len(self.path):
-                return 1
+            # Remove the car from the current road
+            roads[roads.index(self.road)].cars.remove(self)
 
             self.road = self.path[self.index]
             self.pos = [self.road.start[0], self.road.start[1]]
             self.progress = 0
             self.dir = self.road.angle
-        return 0
 
-    def change_speed(self, cars, dt):
+            # If there are cars on the road, the most recent one is the closest
+            if len(roads[roads.index(self.road)].cars) > 0:
+                self.in_front = roads[roads.index(self.road)].cars[-1]
+            else:
+                self.in_front = None
+
+            # Add the car to the new road
+            roads[roads.index(self.road)].cars.append(self)
+
+    def change_speed(self, dt):
         """
         Makes the car change its speed if the car in front is slower
         """
-        def is_behind_other_car(other_car, n_p):
-            """Return True if the current car is behind the other car"""
-            return (other_car.progress > self.progress
-                    and other_car.road == self.road
-                    and other_car.progress <= n_p)
-
-        nearest = None
-        for other_car in cars:
-            if other_car == self:
-                continue
-
-            n_p = nearest.progress if nearest else 1
-
-            if is_behind_other_car(other_car, n_p):
-                nearest = other_car
-
         #if there is a car in front, match its speed
-        if nearest:
-            self.decelerate(nearest.speed, nearest.progress,
-                            nearest.road.length)
+        if self.in_front:
+            self.decelerate(self.in_front.speed, self.in_front.progress,
+                            self.in_front.road.length)
         # if there is no car in front and green, accelerate to the max
-        elif not nearest and self.road.green == True:
+        elif not self.in_front and self.road.green == True:
             self.a = self.max_a * (1 - (self.speed / self.max)**self.delta)
         # if at a red light, decelerate to a stop
         else:
@@ -155,13 +170,6 @@ class Car:
         if distance < des_dist:
             self.a = 0
             self.speed = 0
-
-    def on_screen(self, width, height) -> bool:
-        """
-        Finds out if a car is of screen and deletes it if it is.
-        """
-        return not (self.pos[0] < 0 or self.pos[0] > width or self.pos[1] < 0
-                    or self.pos[1] > height)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Car):
