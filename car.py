@@ -75,7 +75,7 @@ class Car:
         Makes the car change its speed if the car in front is slower
         """
 
-        def is_behind_other_car(other):
+        def is_behind_other_car(other_car, n_p):
             """Return True if the current car is behind the other car"""
             return (
                 other_car.progress > self.progress
@@ -90,19 +90,19 @@ class Car:
 
             n_p = nearest.progress if nearest else 1
 
-            if is_behind_other_car(other_car):
+            if is_behind_other_car(other_car, n_p):
                 nearest = other_car
 
-                self.decelerate(
-                    other_car.speed, other_car.progress, other_car.road.length
+        #if there is a car in front, match its speed
+        if nearest:
+            self.decelerate(
+                    nearest.speed, nearest.progress, nearest.road.length
                 )
-
-        # if there is no car in front, accelerate to the max
-        if not nearest:
+        # if there is no car in front and green, accelerate to the max
+        elif not nearest and self.road.green == True:
             self.a = self.max_a * (1 - (self.speed / self.max) ** self.delta)
-
         # if at a red light, decelerate to a stop
-        if (not nearest) and (self.road.green == False):
+        else:
             if 0.65 < self.progress < 0.85:
                 self.decelerate(0, 0.85, self.road.length, min_des_dist=0)
             elif 0.85 < self.progress < 0.9:
