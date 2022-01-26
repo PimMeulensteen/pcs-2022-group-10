@@ -2,7 +2,6 @@
     method to move the car on a Raod, to change Roads at the end of the road and to update the
     speed based on other veichles. """
 
-
 from road import *
 from math import dist
 from random import choice
@@ -35,6 +34,15 @@ class Car:
 
         self.progress = 0
         self.dir = self.road.angle
+
+    def cur_polution(self):
+        return 1
+
+    def gen_polution(self, dt):
+        """
+        Adds pollution to the road the car is on.
+        """
+        return self.pos[0], self.pos[1], self.cur_polution()
 
     def move(self, dt):
         """
@@ -74,14 +82,11 @@ class Car:
         """
         Makes the car change its speed if the car in front is slower
         """
-
         def is_behind_other_car(other_car, n_p):
             """Return True if the current car is behind the other car"""
-            return (
-                other_car.progress > self.progress
-                and other_car.road == self.road
-                and other_car.progress <= n_p
-            )
+            return (other_car.progress > self.progress
+                    and other_car.road == self.road
+                    and other_car.progress <= n_p)
 
         nearest = None
         for other_car in cars:
@@ -95,12 +100,11 @@ class Car:
 
         #if there is a car in front, match its speed
         if nearest:
-            self.decelerate(
-                    nearest.speed, nearest.progress, nearest.road.length
-                )
+            self.decelerate(nearest.speed, nearest.progress,
+                            nearest.road.length)
         # if there is no car in front and green, accelerate to the max
         elif not nearest and self.road.green == True:
-            self.a = self.max_a * (1 - (self.speed / self.max) ** self.delta)
+            self.a = self.max_a * (1 - (self.speed / self.max)**self.delta)
         # if at a red light, decelerate to a stop
         else:
             if 0.65 < self.progress < 0.85:
@@ -122,25 +126,17 @@ class Car:
         to a car in front, or to decelerate when approaching a red light.
         """
         speed_div = np.abs(self.speed - aim_speed)
-        distance = np.abs(
-            self.progress * self.road.length - aim_progr * aim_roadlen
-        )
+        distance = np.abs(self.progress * self.road.length -
+                          aim_progr * aim_roadlen)
 
         # get the desired distance to the car in front
         react_dist = self.speed * self.reaction
-        des_dist = (
-            min_des_dist
-            + react_dist
-            + (self.speed * speed_div)
-            / (2 * np.sqrt(self.max_a * self.max_brake))
-        )
+        des_dist = (min_des_dist + react_dist + (self.speed * speed_div) /
+                    (2 * np.sqrt(self.max_a * self.max_brake)))
 
         # get the acceleration
-        self.a = self.max_a * (
-            1
-            - (self.speed / self.max) ** self.delta
-            - (des_dist / distance) ** 2
-        )
+        self.a = self.max_a * (1 - (self.speed / self.max)**self.delta -
+                               (des_dist / distance)**2)
 
         # if too close to car in front or desired point is reached, brake
         if distance < des_dist:
@@ -151,19 +147,11 @@ class Car:
         """
         Finds out if a car is of screen and deletes it if it is.
         """
-        return not (
-            self.pos[0] < 0
-            or self.pos[0] > width
-            or self.pos[1] < 0
-            or self.pos[1] > height
-        )
+        return not (self.pos[0] < 0 or self.pos[0] > width or self.pos[1] < 0
+                    or self.pos[1] > height)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Car):
-            return (
-                self.road == other.road
-                and self.speed == other.speed
-                and self.color == other.color
-                and self.pos == other.pos
-            )
+            return (self.road == other.road and self.speed == other.speed
+                    and self.color == other.color and self.pos == other.pos)
         return False

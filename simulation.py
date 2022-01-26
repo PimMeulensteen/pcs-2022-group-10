@@ -2,6 +2,7 @@ from road import *
 from car import *
 from network import *
 
+import matplotlib.pyplot as plt
 import sys
 import pygame
 
@@ -20,16 +21,34 @@ GRAY = (128, 128, 128)
 YELLOW = (255, 255, 0)
 
 # Size and width of the pygame screen
-size = width, height = 500, 500
-screen = pygame.display.set_mode(size)
+SIZE = WIDTH, HEIGHT = 500, 500
+screen = pygame.display.set_mode(SIZE)
+
+
+class PolutionMap:
+    def __init__(self) -> None:
+        self.pol_map = np.zeros(SIZE)
+
+    def __try_add(self, x, y, level):
+        if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
+            return
+        # print(f"added {level} at {x}, {y}")
+        self.pol_map[x, y] = self.pol_map[x, y] + level
+
+    def add_polution(self, x, y, level, spread=15):
+        for i in range(-spread + 1, spread):
+            for j in range(-spread + 1, spread):
+                self.__try_add(round(x + i), round(y + j),
+                               level / (abs(i) + abs(j) + 1))
+
+    def draw_map(self):
+        plt.imshow(self.pol_map, interpolation='none')
+        plt.title("Polution Map")
+        plt.legend()
+        plt.savefig('polution.png')
 
 
 class Simulation:
-    def step(self):
-        clock.tick(FPS)
-        self.simulate()
-        self.draw()
-
     def __init__(self) -> None:
         self.cars = []
         self.roads = []
@@ -37,6 +56,12 @@ class Simulation:
         self.startroads = []
         self.timer = 0
         self.gen_random_data()
+        self.pol_map = PolutionMap()
+
+    def step(self):
+        clock.tick(FPS)
+        self.simulate()
+        self.draw()
 
     def gen_random_data(self) -> None:
         # Test roads
@@ -105,6 +130,7 @@ class Simulation:
         for car in self.cars:
             car.change_speed(self.cars, dt)
             done = car.move(dt)
+            self.pol_map.add_polution(*car.gen_polution(dt))
 
             # Delete cars if they are at the end of their path
             if done:
@@ -200,6 +226,7 @@ def main():
         # Close the window
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                sim.pol_map.draw_map()
                 pygame.quit()
                 sys.exit()
 
