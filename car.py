@@ -2,6 +2,7 @@
     method to move the car on a Raod, to change Roads at the end of the road and to update the
     speed based on other veichles. """
 
+from turtle import speed
 from road import *
 from math import dist
 from random import choice
@@ -21,8 +22,8 @@ class Car:
         self.reaction = 0
         self.delta = 4
         self.a = 0
-        self.max_a = 70
-        self.max_brake = 100
+        self.max_a = 20
+        self.max_brake = 20
 
         self.path = path
         self.index = 0
@@ -89,12 +90,13 @@ class Car:
 
         # If the car in front has moved to a different road, remove it
         if self.in_front:
-            if self.in_front.road != self.road:
-                self.in_front = None
             # If the car in front has ended, remove it
-            elif self.in_front.index == len(self.path) - 1:
+            if self.in_front.index == len(self.path) - 1:
                 if self.in_front not in roads[roads.index(self.road)].cars:
                     self.in_front = None
+
+            elif self.in_front.road != self.road:
+                self.in_front = None
 
 
         return False
@@ -135,11 +137,7 @@ class Car:
             self.a = self.max_a * (1 - (self.speed / self.max)**self.delta)
         # if at a red light, decelerate to a stop
         else:
-            if 0.65 < self.progress < 0.85:
-                self.decelerate(0, 0.85, self.road.length, min_des_dist=0)
-            elif 0.85 < self.progress < 0.9:
-                self.a = 0
-                self.speed = 0
+            self.decelerate(0, 1, self.road.length)
 
         # Eulers method
         self.speed += self.a * dt
@@ -153,7 +151,7 @@ class Car:
         should be reached. For example: can be used to decelerate according
         to a car in front, or to decelerate when approaching a red light.
         """
-        speed_div = np.abs(self.speed - aim_speed)
+        speed_div = self.speed - aim_speed
         distance = np.abs(self.progress * self.road.length -
                           aim_progr * aim_roadlen)
 
@@ -161,15 +159,13 @@ class Car:
         react_dist = self.speed * self.reaction
         des_dist = (min_des_dist + react_dist + (self.speed * speed_div) /
                     (2 * np.sqrt(self.max_a * self.max_brake)))
-
         # get the acceleration
         self.a = self.max_a * (1 - (self.speed / self.max)**self.delta -
                                (des_dist / distance)**2)
 
-        # if too close to car in front or desired point is reached, brake
-        if distance < des_dist:
-            self.a = 0
+        if distance < min_des_dist:
             self.speed = 0
+            self.a = 0
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Car):

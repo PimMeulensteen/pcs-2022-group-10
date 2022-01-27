@@ -5,6 +5,7 @@ from network import *
 import matplotlib.pyplot as plt
 import sys
 import pygame
+from math import dist
 
 # Sets the number of simulation frames per second
 FPS = 60
@@ -24,6 +25,9 @@ YELLOW = (255, 255, 0)
 SIZE = WIDTH, HEIGHT = 500, 500
 screen = pygame.display.set_mode(SIZE)
 
+#width of the road and lenght of the cars
+R_WIDTH = 10
+C_LENGTH = 16
 
 class PolutionMap:
     def __init__(self) -> None:
@@ -114,12 +118,17 @@ class Simulation:
         This method create a car object. if random is True, it will have a
         random speed and be on a random road.
         """
+
         if random == True:
             speed = randint(100, 150)
             path = self.network.paths[randint(0, len(self.network.paths)) - 1]
-            self.cars.append(Car(speed, path, color, self.roads))
-        else:
-            self.cars.append(Car(speed, path, color, self.roads))
+
+        for car in self.roads[self.roads.index(path[0])].cars:
+            if dist(car.pos, path[0].start) < 50:
+                return 0
+
+        self.cars.append(Car(speed, path, color, self.roads))
+
 
     def simulate(self):
         """
@@ -145,7 +154,7 @@ class Simulation:
 
 
         # Spawns random cars
-        if randint(0, 50) == 0 :
+        if randint(0, 50) == 0:
             self.create_car(random=True)
 
     def switch_trafficlights(self):
@@ -175,7 +184,7 @@ class Simulation:
             perp = np.pi / 2 + road.angle
 
             # width of the road
-            w = 10
+            w = R_WIDTH
             offset = [w * np.cos(perp), -w * np.sin(perp)]
 
             # points to draw the rectangle
@@ -206,8 +215,8 @@ class Simulation:
             perp = (car.dir + np.pi / 2) % (np.pi * 2)
 
             # the width and length of the car in its proper orientation
-            w = 8
-            l = 16
+            w = R_WIDTH - 2
+            l = C_LENGTH
             offsetw = [w * np.cos(perp), -w * np.sin(perp)]
             offsetl = [l * np.cos(car.dir), -l * np.sin(car.dir)]
 

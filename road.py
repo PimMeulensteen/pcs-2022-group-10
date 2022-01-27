@@ -76,6 +76,9 @@ class Road:
 
         return Road(point, old_end)
 
+    def full(self, car_length, min_distance):
+        pass
+
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Road):
             return self.start == other.start and self.end == other.end
