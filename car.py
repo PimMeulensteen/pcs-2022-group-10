@@ -2,10 +2,8 @@
     method to move the car on a Raod, to change Roads at the end of the road and to update the
     speed based on other veichles. """
 
-from turtle import speed
 from road import *
 from math import dist
-from random import choice
 import numpy as np
 
 
@@ -106,23 +104,22 @@ class Car:
         Makes the cars change roads if there is a road to change to and
         the current road has ended.
         """
-        if self.progress > 1:
-            # Remove the car from the current road
-            roads[roads.index(self.road)].cars.remove(self)
+        # Remove the car from the current road
+        roads[roads.index(self.road)].cars.remove(self)
 
-            self.road = self.path[self.index]
-            self.pos = [self.road.start[0], self.road.start[1]]
-            self.progress = 0
-            self.dir = self.road.angle
+        self.road = self.path[self.index]
+        self.pos = [self.road.start[0], self.road.start[1]]
+        self.progress = 0
+        self.dir = self.road.angle
 
-            # If there are cars on the road, the most recent one is the closest
-            if len(roads[roads.index(self.road)].cars) > 0:
-                self.in_front = roads[roads.index(self.road)].cars[-1]
-            else:
-                self.in_front = None
+        # If there are cars on the road, the most recent one is the closest
+        if len(roads[roads.index(self.road)].cars) > 0:
+            self.in_front = roads[roads.index(self.road)].cars[-1]
+        else:
+            self.in_front = None
 
-            # Add the car to the new road
-            roads[roads.index(self.road)].cars.append(self)
+        # Add the car to the new road
+        roads[roads.index(self.road)].cars.append(self)
 
     def change_speed(self, dt):
         """

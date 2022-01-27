@@ -1,8 +1,6 @@
 import numpy as np
 from car import Car
-from random import randint
-from typing import Tuple
-
+from math import dist
 
 class Road:
     """
@@ -76,8 +74,12 @@ class Road:
 
         return Road(point, old_end)
 
-    def full(self, car_length, min_distance):
-        pass
+    def full(self):
+        for car in self.cars:
+            if dist(car.pos, self.start) <= 40:
+                return True
+        else:
+            return False
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Road):

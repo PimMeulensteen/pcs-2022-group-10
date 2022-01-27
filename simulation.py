@@ -1,3 +1,4 @@
+from os import stat
 from road import *
 from car import *
 from network import *
@@ -6,6 +7,7 @@ import matplotlib.pyplot as plt
 import sys
 import pygame
 from math import dist
+from random import randint
 
 # Sets the number of simulation frames per second
 FPS = 60
@@ -28,6 +30,7 @@ screen = pygame.display.set_mode(SIZE)
 # width of the road and lenght of the cars
 R_WIDTH = 10
 C_LENGTH = 16
+MIN_DIST = 40
 
 
 class PolutionMap:
@@ -69,7 +72,7 @@ class Simulation:
     def step(self):
         clock.tick(FPS)
         self.simulate()
-        self.draw()
+        #self.draw()
 
     def gen_random_data(self) -> None:
         # Test roads
@@ -125,11 +128,13 @@ class Simulation:
             speed = randint(100, 150)
             path = self.network.paths[randint(0, len(self.network.paths)) - 1]
 
-        for car in self.roads[self.roads.index(path[0])].cars:
-            if dist(car.pos, path[0].start) < 50:
-                return 0
+        start_road = self.roads[self.roads.index(path[0])]
+
+        if start_road.full() == True:
+            return 1
 
         self.cars.append(Car(speed, path, color, self.roads))
+        return 0
 
     def simulate(self):
         """
@@ -141,7 +146,7 @@ class Simulation:
         self.timer += 1
         dt = clock.get_time() / 1000
         self.avg_FPS = (self.avg_FPS * (self.frames - 1) + dt) / self.frames
-        print(self.avg_FPS)
+        print(len(self.cars), self.avg_FPS, self.timer / 1000)
 
         for car in self.cars:
             car.change_speed(dt)
