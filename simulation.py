@@ -135,7 +135,7 @@ class Simulation:
         """
         Simulate a small step of traffic flow.
         """
-        self.switch_trafficlights()
+        self.switch_trafficlights(600)
 
         self.frames += 1
         self.timer += 1
@@ -157,15 +157,17 @@ class Simulation:
         if randint(0, 50) == 0:
             self.create_car(random=True)
 
-    def switch_trafficlights(self):
+    def switch_trafficlights(self, light_duration):
         """
-        Switch traffic lights every 100 steps.
+        Switch traffic lights every n steps.
         """
-        if (self.timer % 300) == 0:
-            prev = ((self.timer - 1) // 300) % len(self.network.in_roads)
-            next = (self.timer // 300) % len(self.network.in_roads)
-            self.network.in_roads[prev].green = False
+        if (self.timer % light_duration) == 0:
+            next = 2 * ((self.timer // light_duration) % 2)
+
+            self.network.in_roads[(next - 2) % 4].green = False
+            self.network.in_roads[(next - 1) % 4].green = False
             self.network.in_roads[next].green = True
+            self.network.in_roads[next + 1].green = True
 
     def draw(self):
         screen.fill(0)
