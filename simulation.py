@@ -25,9 +25,10 @@ YELLOW = (255, 255, 0)
 SIZE = WIDTH, HEIGHT = 500, 500
 screen = pygame.display.set_mode(SIZE)
 
-#width of the road and lenght of the cars
+# width of the road and lenght of the cars
 R_WIDTH = 10
 C_LENGTH = 16
+
 
 class PolutionMap:
     def __init__(self) -> None:
@@ -42,14 +43,15 @@ class PolutionMap:
     def add_polution(self, x, y, level, spread=15):
         for i in range(-spread + 1, spread):
             for j in range(-spread + 1, spread):
-                self.__try_add(round(x + i), round(y + j),
-                               level / (abs(i) + abs(j) + 1))
+                self.__try_add(
+                    round(x + i), round(y + j), level / (abs(i) + abs(j) + 1)
+                )
 
     def draw_map(self):
-        plt.imshow(self.pol_map, interpolation='none')
+        plt.imshow(self.pol_map, interpolation="none")
         plt.title("Polution Map")
         plt.legend()
-        plt.savefig('polution.png')
+        plt.savefig("polution.png")
 
 
 class Simulation:
@@ -79,7 +81,7 @@ class Simulation:
         self.set_trafficlights()
 
         # Test cars
-        #self.create_car([self.roads[0]], False, 150, RED)
+        # self.create_car([self.roads[0]], False, 150, RED)
         # self.create_car([self.roads[1]], False, 100, GREEN)
         # self.create_car([self.roads[2]], False, 140, BLUE)
         # self.create_car([self.roads[7]], False, 120, WHITE)
@@ -129,7 +131,6 @@ class Simulation:
 
         self.cars.append(Car(speed, path, color, self.roads))
 
-
     def simulate(self):
         """
         Simulate a small step of traffic flow.
@@ -151,7 +152,6 @@ class Simulation:
             if done == True:
                 self.cars.remove(car)
                 del car
-
 
         # Spawns random cars
         if randint(0, 50) == 0:
@@ -202,8 +202,10 @@ class Simulation:
             center = [x + y + (z / 2) for x, y, z in zip(road.start, shift, d)]
             p1s = [x + y - (z / 2) for x, y, z in zip(p1, shift, d)]
             p2s = [x + y - (z / 2) for x, y, z in zip(p2, shift, d)]
-            pygame.draw.line(screen, WHITE, p1s, center, width=5)
-            pygame.draw.line(screen, WHITE, p2s, center, width=5)
+
+            trafficlight_color = GREEN if road.green else RED
+            pygame.draw.line(screen, trafficlight_color, p1s, center, width=5)
+            pygame.draw.line(screen, trafficlight_color, p2s, center, width=5)
 
     def draw_cars(self):
         """
