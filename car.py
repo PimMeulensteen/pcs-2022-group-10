@@ -18,10 +18,10 @@ class Car:
         self.color = color
 
         self.reaction = 0
-        self.delta = 4
+        self.delta = 3
         self.a = 0
-        self.max_a = 20
-        self.max_brake = 20
+        self.max_a = 30
+        self.max_brake = 30
 
         self.path = path
         self.index = 0
@@ -89,10 +89,9 @@ class Car:
         # If the car in front has moved to a different road, remove it
         if self.in_front:
             # If the car in front has ended, remove it
-            if self.in_front.index == len(self.path) - 1:
+            if self.index == len(self.path) - 1:
                 if self.in_front not in roads[roads.index(self.road)].cars:
                     self.in_front = None
-
             elif self.in_front.road != self.road:
                 self.in_front = None
 
@@ -121,7 +120,7 @@ class Car:
         # Add the car to the new road
         roads[roads.index(self.road)].cars.append(self)
 
-    def change_speed(self, dt):
+    def change_speed(self, dt, in_roads):
         """
         Makes the car change its speed if the car in front is slower
         """
@@ -129,12 +128,12 @@ class Car:
         if self.in_front:
             self.decelerate(self.in_front.speed, self.in_front.progress,
                             self.in_front.road.length)
+        # wait if necessary
+        elif self.wait(in_roads) == True:
+            self.decelerate(0, 1, self.road.length)
         # if there is no car in front and green, accelerate to the max
         elif not self.in_front and self.road.green == True:
             self.a = self.max_a * (1 - (self.speed / self.max)**self.delta)
-        # if at a red light, decelerate to a stop
-        else:
-            self.decelerate(0, 1, self.road.length)
 
         # Eulers method
         self.speed += self.a * dt
@@ -163,6 +162,28 @@ class Car:
         if distance < min_des_dist:
             self.speed = 0
             self.a = 0
+
+    def wait(self, in_roads):
+        if self.road.green == False:
+            return True
+        if self.index + 1 < len(self.path) - 1:
+            if self.path[self.index + 1].full(self.speed) == True and self.progress > 0.7:
+                return True
+
+            for road in self.road.children:
+                if road == self.path[self.index + 1]:
+                    if road.full(self.speed) == True:
+                        return True
+
+            for road in self.path[self.index + 1].parents:
+                if road == self.road:
+                    continue
+                if road.green == True and road in in_roads:
+                    for car in road.cars:
+                        if car.progress > 0.7:
+                            return True
+        return False
+
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Car):

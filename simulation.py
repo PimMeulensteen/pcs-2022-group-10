@@ -1,4 +1,3 @@
-from os import stat
 from road import *
 from car import *
 from network import *
@@ -6,8 +5,8 @@ from network import *
 import matplotlib.pyplot as plt
 import sys
 import pygame
-from math import dist
 from random import randint
+from numpy.random import choice
 
 # Sets the number of simulation frames per second
 FPS = 60
@@ -52,9 +51,9 @@ class PolutionMap:
 
     def draw_map(self):
         plt.imshow(self.pol_map, interpolation="none")
-        plt.title("Polution Map")
+        plt.title("Pollution Map")
         plt.legend()
-        plt.savefig("polution.png")
+        plt.savefig("pollution.png")
 
 
 class Simulation:
@@ -76,18 +75,13 @@ class Simulation:
 
     def gen_random_data(self) -> None:
         # Test roads
-        self.create_road([500, 230], [0, 230])
-        self.create_road([0, 270], [500, 270])
-        self.create_road([230, 0], [230, 500])
-        self.create_road([270, 500], [270, 0])
+        self.create_road([500, 215], [0, 215])
+        self.create_road([0, 285], [500, 285])
+        self.create_road([215, 0], [215, 500])
+        self.create_road([285, 500], [285, 0])
         self.network.add_roads(self.roads)
         self.set_trafficlights()
 
-        # Test cars
-        # self.create_car([self.roads[0]], False, 150, RED)
-        # self.create_car([self.roads[1]], False, 100, GREEN)
-        # self.create_car([self.roads[2]], False, 140, BLUE)
-        # self.create_car([self.roads[7]], False, 120, WHITE)
 
     def create_road(self, start=[0, 0], end=[0, 0], r=None):
         """This method create a road object. It ensures that if the road
@@ -126,11 +120,13 @@ class Simulation:
 
         if random == True:
             speed = randint(100, 150)
-            path = self.network.paths[randint(0, len(self.network.paths)) - 1]
+            #index 0 for right, 1 for straight, 2 for left, 3 for U-turn
+            index = choice([0,1,2,3],p=[0.3, 0.3, 0.3, 0.1])
+            path = self.network.paths[randint(0,3) + 4 * index]
 
         start_road = self.roads[self.roads.index(path[0])]
 
-        if start_road.full() == True:
+        if start_road.full(speed) == True:
             return 1
 
         self.cars.append(Car(speed, path, color, self.roads))
@@ -149,7 +145,7 @@ class Simulation:
         print(len(self.cars), self.avg_FPS, self.timer / 1000)
 
         for car in self.cars:
-            car.change_speed(dt)
+            car.change_speed(dt, self.network.in_roads)
             done = car.move(dt, self.roads)
             self.pol_map.add_polution(*car.gen_polution(dt))
 

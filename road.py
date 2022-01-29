@@ -18,6 +18,7 @@ class Road:
         self.green = True
 
         self.children = []
+        self.parents = []
         self.cars = []
 
         deltaX = end[0] - start[0]
@@ -74,9 +75,9 @@ class Road:
 
         return Road(point, old_end)
 
-    def full(self):
+    def full(self, speed):
         for car in self.cars:
-            if dist(car.pos, self.start) <= 40:
+            if dist(car.pos, self.start) <= 40 and car.speed < speed:
                 return True
         else:
             return False

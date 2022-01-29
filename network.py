@@ -33,11 +33,12 @@ class Network:
         Creates connections between the roads and stores them in an
         adjacency matrix.
         """
-        # Find the children of every road
+        # Find the children/parents of every road
         for road in self.roads:
             for road_2 in self.roads:
                 if road.end == road_2.start:
                     road.children.append(road_2)
+                    road_2.parents.append(road)
 
         # Make the adjacency matrix and fill it
         self.adj = [[0 for y in range(0,len(self.roads))] for x in range(0,len(self.roads))]
@@ -124,3 +125,5 @@ class Network:
                         u = prev[self.roads.index(u)]
 
                 self.paths.append(S)
+
+        self.paths.sort(key=len)
