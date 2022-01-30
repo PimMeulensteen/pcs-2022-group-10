@@ -1,25 +1,22 @@
-""" This file contains a class for a car. The car class has a
-    method to move the car on a Raod, to change Roads at the end of the road and to update the
-    speed based on other veichles. """
+"""
+This file contains a class for a car. The car class has a
+method to move the car on a Road, to change Roads at the end of the road and
+to update the speed based on other veichles. """
 
 from road import *
 from math import dist
 import numpy as np
 
-
 class Car:
     def __init__(self, max_speed, path, color, roads):
-        """
-        Sets the start parameters:
-        speed, color, position and direction
-        """
+        """Set the start parameters"""
         self.max = max_speed
-        self.speed = max_speed
+        self.v = max_speed
+        self.a = 0
         self.color = color
 
         self.reaction = 0
         self.delta = 3
-        self.a = 0
         self.max_a = 30
         self.max_brake = 30
 
@@ -27,27 +24,23 @@ class Car:
         self.index = 0
         self.road = self.path[0]
 
-        # If there are cars on the road, the most recent one is the closest
-        if len(roads[roads.index(self.road)].cars) > 0:
-            self.in_front = roads[roads.index(self.road)].cars[-1]
+        self.pos = [self.road.start[0], self.road.start[1]]
+        self.progress = 0
+        self.dir = self.road.angle
+
+        # If there are cars on the road, the most recent one is the closest.
+        if len(self.road.cars) > 0:
+            self.in_front = self.road.cars[-1]
         else:
             self.in_front = None
 
-        roads[roads.index(self.road)].cars.append(self)
-
-
-        # otherwise pass by reference
-        # maybe one of you knows a fix
-        self.pos = [self.road.start[0], self.road.start[1]]
-
-        self.progress = 0
-        self.dir = self.road.angle
+        self.road.cars.append(self)
 
     def cur_polution(self):
         # These valeus are for CO emissions. The values are in mg/sec, and based on the pape
         # "On Road Measurements of Vehicle Tailpipe Emissions" by Frey et al.
         # TODO make this more general
-        if self.speed < 10:
+        if self.v < 10:
             # We consider speeds less than 10 km/h as idle
             return 1.5
 
@@ -60,86 +53,79 @@ class Car:
         return 11
 
     def gen_polution(self, dt):
-        """
-        Adds pollution to the road the car is on.
-        """
+        """Add pollution to the road the car is on."""
         return self.pos[0], self.pos[1], self.cur_polution()
 
-    def move(self, dt, roads):
-        """
-        Moves the car according to the timestep and its speed
-        """
-        # In pygame, y is going down, so we have to invert it
-        self.pos[0] += np.cos(self.dir) * self.speed * dt
-        self.pos[1] += -np.sin(self.dir) * self.speed * dt
+    def move(self, dt):
+        """Move the car according to the timestep and its speed."""
+        # In pygame, y is going down, so we have to invert it.
+        self.pos[0] += np.cos(self.dir) * self.v * dt
+        self.pos[1] += -np.sin(self.dir) * self.v * dt
 
-        # How far the car is along the road
+        # How far the car is along the road.
         self.progress = dist(self.pos, self.road.start) / self.road.length
 
-        # If the car is at the end of the path, we want to remove it
-        if self.progress > 1 and self.index >= len(self.path) - 1:
-            roads[roads.index(self.road)].cars.remove(self)
-            return True
-
-        # If the car is at the end of the road, change the road
+        # If the car is at the end of the road, change the road.
         if self.progress > 1:
-            self.index += 1
-            self.change_road(roads)
+            return self.change_road()
 
         # If the car in front has moved to a different road, remove it
         if self.in_front:
-            # If the car in front has ended, remove it
-            if self.index == len(self.path) - 1:
-                if self.in_front not in roads[roads.index(self.road)].cars:
-                    self.in_front = None
-            elif self.in_front.road != self.road:
+            if self.in_front not in self.road.cars:
                 self.in_front = None
-
 
         return False
 
-    def change_road(self, roads):
+    def change_road(self):
         """
-        Makes the cars change roads if there is a road to change to and
-        the current road has ended.
+        Make the cars change roads if there is a road to change to and
+        the current road has ended. Return True if this can be done, otherwise
+        return False.
         """
         # Remove the car from the current road
-        roads[roads.index(self.road)].cars.remove(self)
+        self.road.cars.remove(self)
+
+        self.index += 1
+        if self.index >= len(self.path):
+            return True
 
         self.road = self.path[self.index]
         self.pos = [self.road.start[0], self.road.start[1]]
         self.progress = 0
         self.dir = self.road.angle
 
-        # If there are cars on the road, the most recent one is the closest
-        if len(roads[roads.index(self.road)].cars) > 0:
-            self.in_front = roads[roads.index(self.road)].cars[-1]
+        # If there are cars on the road, the most recent one is the closest.
+        if len(self.road.cars) > 0:
+            self.in_front = self.road.cars[-1]
         else:
             self.in_front = None
 
         # Add the car to the new road
-        roads[roads.index(self.road)].cars.append(self)
+        self.road.cars.append(self)
+
+        return False
 
     def change_speed(self, dt, in_roads):
         """
         Makes the car change its speed if the car in front is slower
         """
-        #if there is a car in front, match its speed
+        # If there is a car in front, match its speed,
         if self.in_front:
-            self.decelerate(self.in_front.speed, self.in_front.progress,
+            self.decelerate(self.in_front.v, self.in_front.progress,
                             self.in_front.road.length)
-        # wait if necessary
+        # Wait if necessary.
         elif self.wait(in_roads) == True:
             self.decelerate(0, 1, self.road.length)
-        # if there is no car in front and green, accelerate to the max
-        elif not self.in_front and self.road.green == True:
-            self.a = self.max_a * (1 - (self.speed / self.max)**self.delta)
+        # If there is no car in front and no wait, accelerate to the max.
+        elif self.road.green == True:
+            self.a = self.max_a * (1 - (self.v / self.max)**self.delta)
 
         # Eulers method
-        self.speed += self.a * dt
+        self.v += self.a * dt
 
         # Cap speed at the max
-        self.speed = min(self.speed, self.max)
+        self.v = min(self.v, self.max)
+        self.v = max(self.v, 0)
 
     def decelerate(self, aim_speed, aim_progr, aim_roadlen, min_des_dist=40):
         """
@@ -147,46 +133,43 @@ class Car:
         should be reached. For example: can be used to decelerate according
         to a car in front, or to decelerate when approaching a red light.
         """
-        speed_div = self.speed - aim_speed
-        distance = np.abs(self.progress * self.road.length -
-                          aim_progr * aim_roadlen)
+        speed_div = self.v - aim_speed
+        distance = aim_progr * aim_roadlen - self.progress * self.road.length
 
-        # get the desired distance to the car in front
-        react_dist = self.speed * self.reaction
-        des_dist = (min_des_dist + react_dist + (self.speed * speed_div) /
+        # Get the desired distance to the car in front.
+        react_dist = self.v * self.reaction
+        des_dist = (min_des_dist + react_dist + (self.v * speed_div) /
                     (2 * np.sqrt(self.max_a * self.max_brake)))
-        # get the acceleration
-        self.a = self.max_a * (1 - (self.speed / self.max)**self.delta -
+        # Get the acceleration.
+        self.a = self.max_a * (1 - (self.v / self.max)**self.delta -
                                (des_dist / distance)**2)
 
         if distance < min_des_dist:
-            self.speed = 0
+            self.v = 0
             self.a = 0
 
     def wait(self, in_roads):
+        """Decide if a car should wait."""
         if self.road.green == False:
             return True
-        if self.index + 1 < len(self.path) - 1:
-            if self.path[self.index + 1].full(self.speed) == True and self.progress > 0.7:
+        if self.index < len(self.path) - 1:
+            # Wait if the next road is occupied.
+            if self.path[self.index + 1].full(self.v) == True and self.progress > 0.8:
                 return True
 
-            for road in self.road.children:
-                if road == self.path[self.index + 1]:
-                    if road.full(self.speed) == True:
-                        return True
-
+            # Wait if a car is coming that has the right of way.
             for road in self.path[self.index + 1].parents:
                 if road == self.road:
                     continue
                 if road.green == True and road in in_roads:
                     for car in road.cars:
-                        if car.progress > 0.7:
+                        if car.progress > 0.5:
                             return True
         return False
 
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Car):
-            return (self.road == other.road and self.speed == other.speed
+            return (self.road == other.road and self.v == other.v
                     and self.color == other.color and self.pos == other.pos)
         return False

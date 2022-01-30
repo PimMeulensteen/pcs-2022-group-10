@@ -39,7 +39,7 @@ class PolutionMap:
     def __try_add(self, x, y, level):
         if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
             return
-        # print(f"added {level} at {x}, {y}")
+        #print(f"added {level} at {x}, {y}")
         self.pol_map[x, y] = self.pol_map[x, y] + level
 
     def add_polution(self, x, y, level, spread=15):
@@ -71,7 +71,7 @@ class Simulation:
     def step(self):
         clock.tick(FPS)
         self.simulate()
-        #self.draw()
+        self.draw()
 
     def gen_random_data(self) -> None:
         # Test roads
@@ -80,6 +80,7 @@ class Simulation:
         self.create_road([215, 0], [215, 500])
         self.create_road([285, 500], [285, 0])
         self.network.add_roads(self.roads)
+        self.network.calibrate()
         self.set_trafficlights()
 
 
@@ -142,11 +143,11 @@ class Simulation:
         self.timer += 1
         dt = clock.get_time() / 1000
         self.avg_FPS = (self.avg_FPS * (self.frames - 1) + dt) / self.frames
-        print(len(self.cars), self.avg_FPS, self.timer / 1000)
+        #print(len(self.cars), self.avg_FPS, self.timer / 1000)
 
         for car in self.cars:
             car.change_speed(dt, self.network.in_roads)
-            done = car.move(dt, self.roads)
+            done = car.move(dt)
             self.pol_map.add_polution(*car.gen_polution(dt))
 
             # Delete cars if they are at the end of their path

@@ -2,13 +2,10 @@ from numpy import infty
 
 
 class Network:
-    """
-    Defines a network of roads.
-    """
+    """Define a network of roads."""
+
     def __init__(self):
-        """
-        Initiates the network as just a list of roads.
-        """
+        """Initiate the network as a list of roads."""
         self.roads = []
         self.adj = []
         self.in_roads = []
@@ -16,13 +13,12 @@ class Network:
         self.paths = []
 
     def add_roads(self, roads):
-        """
-        Adds roads to the network.
-        """
+        """Adds roads to the network."""
         for road in roads:
             self.roads.append(road)
 
-        # Make the connections, and find the routes the cars can take.
+    def calibrate(self):
+        """Calibrate the network by finding the connections and paths."""
         self.make_connections()
         self.incoming()
         self.outgoing()
@@ -30,18 +26,18 @@ class Network:
 
     def make_connections(self):
         """
-        Creates connections between the roads and stores them in an
+        Find the connections between the roads and store them in an
         adjacency matrix.
         """
-        # Find the children/parents of every road
+        # Find the children and parents of every road.
         for road in self.roads:
             for road_2 in self.roads:
                 if road.end == road_2.start:
                     road.children.append(road_2)
                     road_2.parents.append(road)
 
-        # Make the adjacency matrix and fill it
-        self.adj = [[0 for y in range(0,len(self.roads))] for x in range(0,len(self.roads))]
+        # Make the adjacency matrix and fill it.
+        self.adj = [[0 for _ in range(0,len(self.roads))] for _ in range(0,len(self.roads))]
         for road in self.roads:
             for child in road.children:
                 self.adj[self.roads.index(road)][self.roads.index(child)] = 1
@@ -52,7 +48,7 @@ class Network:
         Check which roads have no parent, and are thus places where a car can
         spawn.
         """
-        # We check if a column of the adj matrix is all zeros
+        # Check if a column of the adj matrix is all zeros.
         for j in range(len(self.adj)):
             incoming = 0
             for i in range(len(self.adj)):
@@ -66,59 +62,59 @@ class Network:
         Check which roads have no parent, and are thus places where a car can
         end.
         """
-        # We check if a row of the adj matrix is all zeros
+        # Ceck if a row of the adj matrix is all zeros.
         for i in range(len(self.adj)):
             if self.adj[i] == [0] * len(self.adj):
                 self.out_roads.append(self.roads[i])
 
     def find_paths(self):
         """
-        Finds the shortest paths from any incoming road to any outgoing road.
-        This is done with a Dijkstra's algorithm. See the wikipedia pseudocode
+        Find the shortest paths from any incoming road to any outgoing road.
+        Do this with a Dijkstra's algorithm. See the wikipedia pseudocode
         for more comments.
         """
-        # We loop over every start and end to get every possible path
+        # Loop over every start and end to get every possible path between them.
         for start in self.in_roads:
             for end in self.out_roads:
 
-                # Set the distance to every road to infinity, except for start
+                # Set the distance to every road to infinity, except for start.
                 dist = [infty] * len(self.roads)
                 dist[self.roads.index(start)] = 0
 
-                #previous road in the shortest path
+                # Set array for the previous road in the shortest path.
                 prev = [None] * len(self.roads)
 
-                # Roads we have to check
+                # Roads to check.
                 Q = [road for road in self.roads]
 
                 while len(Q) > 0:
-                    # Set u as the road we need to check with the shortest
-                    # distance and remove it from Q
+                    # Set u as the road with the shortest distance that is
+                    # not checked yet.
                     Q_dist = [dist[self.roads.index(x)] for x in Q]
                     u = Q[Q_dist.index(min(Q_dist))]
                     Q.remove(u)
 
-
-                    # Stop if we reach the end
+                    # Stop if the end is reached.
                     if u == end:
                         break
 
                     for child in u.children:
-                        # Only check the children which weren't checked before
+                        # Only check the children which weren't checked before.
                         if child in Q:
                             u_index = self.roads.index(u)
                             c_index = self.roads.index(child)
 
                             # Change the distance and previous if the distance
-                            # from u is smaller then from previous
+                            # from u is smaller then from previous.
                             alt = dist[u_index] + u.length
                             if alt < dist[c_index]:
                                 dist[c_index] = alt
                                 prev[c_index] = u
 
-                # Work backwards from the end to find the path
+                # Work backwards from the end to find the path.
                 S = []
                 u = end
+                # Only do this if the end was reachable.
                 if prev[self.roads.index(u)] or u == start:
                     while u:
                         S.insert(0, u)
@@ -126,4 +122,5 @@ class Network:
 
                 self.paths.append(S)
 
+        # Sort the paths by length to make differentiating easier.
         self.paths.sort(key=len)
