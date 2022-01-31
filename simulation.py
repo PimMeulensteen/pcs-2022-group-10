@@ -35,12 +35,14 @@ MIN_DIST = 40
 class PolutionMap:
     def __init__(self) -> None:
         self.pol_map = np.zeros(SIZE)
+        self.total_pol = 0
 
     def __try_add(self, x, y, level):
         if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
             return
         # print(f"added {level} at {x}, {y}")
         self.pol_map[x, y] = self.pol_map[x, y] + level
+        self.total_pol = self.total_pol + level
 
     def add_polution(self, x, y, level, spread=15):
         for i in range(-spread + 1, spread):
