@@ -32,7 +32,7 @@ C_LENGTH = 16
 MIN_DIST = 40
 
 
-class PolutionMap:
+class PollutionMap:
     def __init__(self) -> None:
         self.pol_map = np.zeros(SIZE)
         self.total_pol = 0
@@ -44,7 +44,7 @@ class PolutionMap:
         self.pol_map[x, y] = self.pol_map[x, y] + level
         self.total_pol = self.total_pol + level
 
-    def add_polution(self, x, y, level, spread=15):
+    def add_pollution(self, x, y, level, spread=15):
         for i in range(-spread + 1, spread):
             for j in range(-spread + 1, spread):
                 self.__try_add(
@@ -69,7 +69,7 @@ class Simulation:
         self.timer = 0
         self.light_duration = 10
         self.gen_random_data()
-        self.pol_map = PolutionMap()
+        self.pol_map = PollutionMap()
 
     def step(self):
         clock.tick(FPS)
@@ -150,7 +150,7 @@ class Simulation:
         for car in self.cars:
             car.change_speed(dt, self.network.in_roads)
             done = car.move(dt)
-            self.pol_map.add_polution(*car.gen_polution(dt))
+            self.pol_map.add_pollution(*car.gen_pollution(dt))
 
             # Delete cars if they are at the end of their path
             if done == True:
