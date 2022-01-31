@@ -39,7 +39,7 @@ class PolutionMap:
     def __try_add(self, x, y, level):
         if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
             return
-        #print(f"added {level} at {x}, {y}")
+        # print(f"added {level} at {x}, {y}")
         self.pol_map[x, y] = self.pol_map[x, y] + level
 
     def add_polution(self, x, y, level, spread=15):
@@ -65,6 +65,7 @@ class Simulation:
         self.network = Network()
         self.startroads = []
         self.timer = 0
+        self.light_duration = 10
         self.gen_random_data()
         self.pol_map = PolutionMap()
 
@@ -82,7 +83,6 @@ class Simulation:
         self.network.add_roads(self.roads)
         self.network.calibrate()
         self.set_trafficlights()
-
 
     def create_road(self, start=[0, 0], end=[0, 0], r=None):
         """This method create a road object. It ensures that if the road
@@ -121,9 +121,9 @@ class Simulation:
 
         if random == True:
             speed = randint(100, 150)
-            #index 0 for right, 1 for straight, 2 for left, 3 for U-turn
-            index = choice([0,1,2,3],p=[0.3, 0.3, 0.3, 0.1])
-            path = self.network.paths[randint(0,3) + 4 * index]
+            # index 0 for right, 1 for straight, 2 for left, 3 for U-turn
+            index = choice([0, 1, 2, 3], p=[0.3, 0.3, 0.3, 0.1])
+            path = self.network.paths[randint(0, 3) + 4 * index]
 
         start_road = self.roads[self.roads.index(path[0])]
 
@@ -137,13 +137,13 @@ class Simulation:
         """
         Simulate a small step of traffic flow.
         """
-        self.switch_trafficlights(600)
+        self.switch_trafficlights()
 
         self.frames += 1
         self.timer += 1
         dt = clock.get_time() / 1000
         self.avg_FPS = (self.avg_FPS * (self.frames - 1) + dt) / self.frames
-        #print(len(self.cars), self.avg_FPS, self.timer / 1000)
+        # print(len(self.cars), self.avg_FPS, self.timer / 1000)
 
         for car in self.cars:
             car.change_speed(dt, self.network.in_roads)
@@ -159,12 +159,12 @@ class Simulation:
         if randint(0, 50) == 0:
             self.create_car(random=True)
 
-    def switch_trafficlights(self, light_duration):
+    def switch_trafficlights(self):
         """
         Switch traffic lights every n steps.
         """
-        if (self.timer % light_duration) == 0:
-            next = 2 * ((self.timer // light_duration) % 2)
+        if (self.timer % (FPS * self.light_duration)) == 0:
+            next = 2 * ((self.timer // (FPS * self.light_duration)) % 2)
 
             self.network.in_roads[(next - 2) % 4].green = False
             self.network.in_roads[(next - 1) % 4].green = False
