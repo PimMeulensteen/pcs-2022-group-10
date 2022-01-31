@@ -127,7 +127,7 @@ class Simulation:
 
         start_road = self.roads[self.roads.index(path[0])]
 
-        if start_road.full(speed) == True:
+        if start_road.full() == True:
             return 1
 
         self.cars.append(Car(speed, path, color, self.roads))

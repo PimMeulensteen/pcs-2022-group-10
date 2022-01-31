@@ -68,13 +68,13 @@ class Road:
         self.length = dist(self.start, self.end)
         return Road(point, old_end)
 
-    def full(self, speed):
+    def full(self):
         """Check if a car can come to the road."""
 
         for car in self.cars:
             # If there is a car at the start and it is slower than speed,
             # the road is full.
-            if dist(car.pos, self.start) <= 40 and car.v < speed:
+            if dist(car.pos, self.start) <= 40:
                 return True
         else:
             return False

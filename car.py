@@ -16,9 +16,9 @@ class Car:
         self.color = color
 
         self.reaction = 0
-        self.delta = 3
-        self.max_a = 30
-        self.max_brake = 30
+        self.delta = 4
+        self.max_a = 20
+        self.max_brake = 20
 
         self.path = path
         self.index = 0
@@ -28,11 +28,7 @@ class Car:
         self.progress = 0
         self.dir = self.road.angle
 
-        # If there are cars on the road, the most recent one is the closest.
-        if len(self.road.cars) > 0:
-            self.in_front = self.road.cars[-1]
-        else:
-            self.in_front = None
+        self.in_front = self.check_in_front()
 
         self.road.cars.append(self)
 
@@ -69,11 +65,6 @@ class Car:
         if self.progress > 1:
             return self.change_road()
 
-        # If the car in front has moved to a different road, remove it
-        if self.in_front:
-            if self.in_front not in self.road.cars:
-                self.in_front = None
-
         return False
 
     def change_road(self):
@@ -94,12 +85,6 @@ class Car:
         self.progress = 0
         self.dir = self.road.angle
 
-        # If there are cars on the road, the most recent one is the closest.
-        if len(self.road.cars) > 0:
-            self.in_front = self.road.cars[-1]
-        else:
-            self.in_front = None
-
         # Add the car to the new road
         self.road.cars.append(self)
 
@@ -109,13 +94,25 @@ class Car:
         """
         Makes the car change its speed if the car in front is slower
         """
-        # If there is a car in front, match its speed,
+
+        # Check if there is a car in front of you.
+        self.in_front, distance = self.check_in_front()
         if self.in_front:
-            self.decelerate(self.in_front.v, self.in_front.progress,
-                            self.in_front.road.length)
+        # If there is a car on the same road in front, match its speed.
+            if self.in_front.road == self.road:
+                self.decelerate(self.in_front.v, distance)
+            # Wait if necessary.
+            elif self.wait(in_roads) == True:
+                distance = self.road.length - self.progress * self.road.length
+                self.decelerate(0, distance)
+            # If there is a car in front on another road, match its speed,
+            else:
+                self.decelerate(self.in_front.v, distance)
+
         # Wait if necessary.
-        elif self.wait(in_roads) == True:
-            self.decelerate(0, 1, self.road.length)
+        if self.wait(in_roads) == True:
+            distance = self.road.length - self.progress * self.road.length
+            self.decelerate(0, distance)
         # If there is no car in front and no wait, accelerate to the max.
         elif self.road.green == True:
             self.a = self.max_a * (1 - (self.v / self.max)**self.delta)
@@ -127,14 +124,13 @@ class Car:
         self.v = min(self.v, self.max)
         self.v = max(self.v, 0)
 
-    def decelerate(self, aim_speed, aim_progr, aim_roadlen, min_des_dist=40):
+    def decelerate(self, aim_speed, distance, min_des_dist=45):
         """
         Decelerate according to a desired speed and where on the road this
         should be reached. For example: can be used to decelerate according
         to a car in front, or to decelerate when approaching a red light.
         """
         speed_div = self.v - aim_speed
-        distance = aim_progr * aim_roadlen - self.progress * self.road.length
 
         # Get the desired distance to the car in front.
         react_dist = self.v * self.reaction
@@ -153,10 +149,6 @@ class Car:
         if self.road.green == False:
             return True
         if self.index < len(self.path) - 1:
-            # Wait if the next road is occupied.
-            if self.path[self.index + 1].full(self.v) == True and self.progress > 0.8:
-                return True
-
             # Wait if a car is coming that has the right of way.
             for road in self.path[self.index + 1].parents:
                 if road == self.road:
@@ -166,6 +158,48 @@ class Car:
                         if car.progress > 0.5:
                             return True
         return False
+
+    def check_in_front(self):
+        """
+        Check if there is a car in front of self, and returns it
+        and the distance between the cars.
+        """
+        nearest = None
+        nearest_progress = 1
+
+        # Check the cars on the current road first.
+        for car in self.road.cars:
+            if car.progress > self.progress and car.progress < nearest_progress:
+                nearest_progress = car.progress
+                nearest = car
+
+        # Return if there is.
+        if nearest:
+            return (nearest, nearest_progress * car.road.length -
+                    self.progress * self.road.length)
+
+        # Check the other roads in the path.
+        for road in self.path[self.index + 1:]:
+            road_index = self.path.index(road)
+            for car in road.cars:
+                if car.progress < nearest_progress:
+                    nearest_progress = car.progress
+                    nearest = car
+
+            if nearest:
+                #Calculate the distance between. This is the sum of the road
+                #lengths minus the progress the cars have made.
+                distance = sum([r.length for r in self.path[self.index:road_index]])
+                distance += nearest.progress * nearest.road.length
+                distance -= self.progress * self.road.length
+                return nearest, distance
+
+        return None, 0
+
+
+
+
+
 
 
     def __eq__(self, other: object) -> bool:
