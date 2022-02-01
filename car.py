@@ -3,9 +3,26 @@ This file contains a class for a car. The car class has a
 method to move the car on a Road, to change Roads at the end of the road and
 to update the speed based on other veichles. """
 
+from re import A
 from road import *
 from math import dist
 import numpy as np
+from dataclasses import dataclass
+
+
+@dataclass
+class EmmissionType:
+    idle: float
+    accel: float
+    decel: float
+    cruise: float
+
+
+CAR_NO = EmmissionType(0.06, 1.4, 0.52, 1.1)
+CAR_HC = EmmissionType(0.25, 1, 0.36, 0.6)
+CAR_CO = EmmissionType(1.5, 23, 5.5, 11)
+CAR_CO2 = EmmissionType(1.7, 6.4, 2.6, 4.1)
+EM_TYPES = {"no": CAR_NO, "hc": CAR_HC, "co": CAR_CO, "co2": CAR_CO2}
 
 
 class Car:
@@ -33,25 +50,26 @@ class Car:
 
         self.road.cars.append(self)
 
-    def cur_pollution(self):
+    def cur_pollution(self, pol_type="co2"):
         # These valeus are for CO emissions. The values are in mg/sec, and based on the pape
         # "On Road Measurements of Vehicle Tailpipe Emissions" by Frey et al.
         # TODO make this more general
+        assert pol_type in EM_TYPES.keys()
         if self.v < 10:
             # We consider speeds less than 10 km/h as idle
-            return 1.5
+            return EM_TYPES[pol_type].idle
 
-        if self.a > 0:
-            return 23
+        if self.a > 0.1:
+            return EM_TYPES[pol_type].accel
 
-        if self.a < 0:
-            return 5.5
+        if self.a < 0.1:
+            return EM_TYPES[pol_type].decel
 
-        return 11
+        return EM_TYPES[pol_type].cruise
 
-    def gen_pollution(self, dt):
+    def gen_pollution(self, dt, pol_type="co2"):
         """Add pollution to the road the car is on."""
-        return self.pos[0], self.pos[1], self.cur_pollution()
+        return self.pos[0], self.pos[1], self.cur_pollution(pol_type) * dt
 
     def move(self, dt):
         """Move the car according to the timestep and its speed."""
@@ -116,7 +134,7 @@ class Car:
             self.decelerate(0, distance)
         # If there is no car in front and no wait, accelerate to the max.
         elif self.road.green == True:
-            self.a = self.max_a * (1 - (self.v / self.max) ** self.delta)
+            self.a = self.max_a * (1 - (self.v / self.max)**self.delta)
 
         # Eulers method
         self.v += self.a * dt
@@ -135,15 +153,11 @@ class Car:
 
         # Get the desired distance to the car in front.
         react_dist = self.v * self.reaction
-        des_dist = (
-            min_des_dist
-            + react_dist
-            + (self.v * speed_div) / (2 * np.sqrt(self.max_a * self.max_brake))
-        )
+        des_dist = (min_des_dist + react_dist + (self.v * speed_div) /
+                    (2 * np.sqrt(self.max_a * self.max_brake)))
         # Get the acceleration.
-        self.a = self.max_a * (
-            1 - (self.v / self.max) ** self.delta - (des_dist / distance) ** 2
-        )
+        self.a = self.max_a * (1 - (self.v / self.max)**self.delta -
+                               (des_dist / distance)**2)
 
         if distance < min_des_dist:
             self.v = 0
@@ -174,10 +188,8 @@ class Car:
 
         # Check the cars on the current road first.
         for car in self.road.cars:
-            if (
-                car.progress > self.progress
-                and car.progress < nearest_progress
-            ):
+            if (car.progress > self.progress
+                    and car.progress < nearest_progress):
                 nearest_progress = car.progress
                 nearest = car
 
@@ -185,12 +197,12 @@ class Car:
         if nearest:
             return (
                 nearest,
-                nearest_progress * car.road.length
-                - self.progress * self.road.length,
+                nearest_progress * car.road.length -
+                self.progress * self.road.length,
             )
 
         # Check the other roads in the path.
-        for road in self.path[self.index + 1 :]:
+        for road in self.path[self.index + 1:]:
             road_index = self.path.index(road)
             for car in road.cars:
                 if car.progress < nearest_progress:
@@ -201,8 +213,7 @@ class Car:
                 # Calculate the distance between. This is the sum of the road
                 # lengths minus the progress the cars have made.
                 distance = sum(
-                    [r.length for r in self.path[self.index : road_index]]
-                )
+                    [r.length for r in self.path[self.index:road_index]])
                 distance += nearest.progress * nearest.road.length
                 distance -= self.progress * self.road.length
                 return nearest, distance
@@ -211,10 +222,6 @@ class Car:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Car):
-            return (
-                self.road == other.road
-                and self.v == other.v
-                and self.color == other.color
-                and self.pos == other.pos
-            )
+            return (self.road == other.road and self.v == other.v
+                    and self.color == other.color and self.pos == other.pos)
         return False

@@ -33,9 +33,10 @@ MIN_DIST = 40
 
 
 class PollutionMap:
-    def __init__(self) -> None:
+    def __init__(self, pol_type="co2") -> None:
         self.pol_map = np.zeros(SIZE)
         self.total_pol = 0
+        self.pol_type = pol_type
 
     def __try_add(self, x, y, level):
         if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
@@ -47,15 +48,15 @@ class PollutionMap:
     def add_pollution(self, x, y, level, spread=15):
         for i in range(-spread + 1, spread):
             for j in range(-spread + 1, spread):
-                self.__try_add(
-                    round(x + i), round(y + j), level / (abs(i) + abs(j) + 1)
-                )
+                self.__try_add(round(x + i), round(y + j),
+                               level / (abs(i) + abs(j) + 1))
 
-    def draw_map(self):
-        plt.imshow(self.pol_map, interpolation="none")
-        plt.title("Pollution Map")
-        plt.legend()
-        plt.savefig("pollution.png")
+    def draw_map(self, ax):
+        ax.imshow(self.pol_map.T, interpolation="none")
+        ax.set_title(f"{self.pol_type} pollution in mg")
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.axis('off')
 
 
 class Simulation:
@@ -70,7 +71,12 @@ class Simulation:
         self.car_gen_prob = 2
         self.num_cars = 0
         self.gen_random_data()
-        self.pol_map = PollutionMap()
+        self.pol_maps = [
+            PollutionMap("co2"),
+            PollutionMap("no"),
+            PollutionMap("hc"),
+            PollutionMap("co")
+        ]
 
     def step(self):
         clock.tick(FPS)
@@ -148,7 +154,10 @@ class Simulation:
         for car in self.cars:
             car.change_speed(dt, self.network.in_roads)
             done = car.move(dt)
-            self.pol_map.add_pollution(*car.gen_pollution(dt))
+            for i in range(4):
+                pol_type = self.pol_maps[i].pol_type
+                self.pol_maps[i].add_pollution(
+                    *car.gen_pollution(dt, pol_type))
 
             # Delete cars if they are at the end of their path
             if done == True:
@@ -236,6 +245,15 @@ class Simulation:
             # draw the car
             pygame.draw.polygon(screen, car.color, [p1, p2, p3, p4])
 
+    def draw_pol_map(self):
+        # plt.figute()
+
+        fig, axs = plt.subplots(2, 2)
+        plt.suptitle("Pollution heatmap for differnet pollution types")
+        for pol_map, ax in zip(self.pol_maps, axs.flatten()):
+            pol_map.draw_map(ax)
+        plt.savefig("pollution.png")
+
 
 sim = Simulation()
 
@@ -247,7 +265,7 @@ def main():
         # Close the window
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                sim.pol_map.draw_map()
+                sim.draw_pol_map()
                 pygame.quit()
                 sys.exit()
 
