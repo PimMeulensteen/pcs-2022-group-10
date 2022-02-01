@@ -1,10 +1,9 @@
 """
 This file contains a class for a car. The car class has a
 method to move the car on a Road, to change Roads at the end of the road and
-to update the speed based on other veichles. """
+to update the speed based on other veichles. 
+"""
 
-from re import A
-from road import *
 from math import dist
 import numpy as np
 from dataclasses import dataclass
@@ -102,7 +101,7 @@ class Car:
         self.road = self.path[self.index]
         self.pos = [self.road.start[0], self.road.start[1]]
         self.progress = 0
-        self.dir = self.road.angle
+        self.dir = self.road.angle == True
 
         # Add the car to the new road
         self.road.cars.append(self)
@@ -121,7 +120,7 @@ class Car:
             if self.in_front.road == self.road:
                 self.decelerate(self.in_front.v, distance)
             # Wait if necessary.
-            elif self.wait(in_roads) == True:
+            elif self.wait(in_roads):
                 distance = self.road.length - self.progress * self.road.length
                 self.decelerate(0, distance)
             # If there is a car in front on another road, match its speed,
@@ -129,12 +128,12 @@ class Car:
                 self.decelerate(self.in_front.v, distance)
 
         # Wait if necessary.
-        if self.wait(in_roads) == True:
+        if self.wait(in_roads):
             distance = self.road.length - self.progress * self.road.length
             self.decelerate(0, distance)
         # If there is no car in front and no wait, accelerate to the max.
-        elif self.road.green == True:
-            self.a = self.max_a * (1 - (self.v / self.max)**self.delta)
+        elif self.road.green:
+            self.a = self.max_a * (1 - (self.v / self.max) ** self.delta)
 
         # Eulers method
         self.v += self.a * dt
@@ -153,11 +152,15 @@ class Car:
 
         # Get the desired distance to the car in front.
         react_dist = self.v * self.reaction
-        des_dist = (min_des_dist + react_dist + (self.v * speed_div) /
-                    (2 * np.sqrt(self.max_a * self.max_brake)))
+        des_dist = (
+            min_des_dist
+            + react_dist
+            + (self.v * speed_div) / (2 * np.sqrt(self.max_a * self.max_brake))
+        )
         # Get the acceleration.
-        self.a = self.max_a * (1 - (self.v / self.max)**self.delta -
-                               (des_dist / distance)**2)
+        self.a = self.max_a * (
+            1 - (self.v / self.max) ** self.delta - (des_dist / distance) ** 2
+        )
 
         if distance < min_des_dist:
             self.v = 0
@@ -165,14 +168,15 @@ class Car:
 
     def wait(self, in_roads):
         """Decide if a car should wait."""
-        if self.road.green == False:
+        if not self.road.green:
             return True
         if self.index < len(self.path) - 1:
             # Wait if a car is coming that has the right of way.
             for road in self.path[self.index + 1].parents:
                 if road == self.road:
                     continue
-                if road.green == True and road in in_roads:
+
+                if road.green and road in in_roads:
                     for car in road.cars:
                         if dist(car.pos, car.road.end) > 80:
                             return True
@@ -188,8 +192,7 @@ class Car:
 
         # Check the cars on the current road first.
         for car in self.road.cars:
-            if (car.progress > self.progress
-                    and car.progress < nearest_progress):
+            if car.progress > self.progress and car.progress < nearest_progress:
                 nearest_progress = car.progress
                 nearest = car
 
@@ -197,8 +200,7 @@ class Car:
         if nearest:
             return (
                 nearest,
-                nearest_progress * car.road.length -
-                self.progress * self.road.length,
+                nearest_progress * car.road.length - self.progress * self.road.length,
             )
 
         # Check the other roads in the path.
@@ -213,7 +215,7 @@ class Car:
                 # Calculate the distance between. This is the sum of the road
                 # lengths minus the progress the cars have made.
                 distance = sum(
-                    [r.length for r in self.path[self.index:road_index]])
+                    [r.length for r in self.path[self.index: road_index]])
                 distance += nearest.progress * nearest.road.length
                 distance -= self.progress * self.road.length
                 return nearest, distance
@@ -222,6 +224,10 @@ class Car:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Car):
-            return (self.road == other.road and self.v == other.v
-                    and self.color == other.color and self.pos == other.pos)
+            return (
+                self.road == other.road
+                and self.v == other.v
+                and self.color == other.color
+                and self.pos == other.pos
+            )
         return False

@@ -1,11 +1,12 @@
-from road import *
-from car import *
-from network import *
+from road import Road
+from car import Car
+from network import Network
 
 import matplotlib.pyplot as plt
 import sys
 import pygame
 from random import randint
+import numpy as np
 from numpy.random import choice
 
 # Sets the number of simulation frames per second
@@ -33,30 +34,49 @@ MIN_DIST = 40
 
 
 class PollutionMap:
+    """
+    This class is used to create a map of pollution. It is used to
+    visualize the pollution in the simulation and keep track of the
+    pollution.
+    """
+
     def __init__(self, pol_type="co2") -> None:
         self.pol_map = np.zeros(SIZE)
         self.total_pol = 0
         self.pol_type = pol_type
 
     def __try_add(self, x, y, level):
+        """
+        This function is used to add pollution to the map. It checks if the
+        position is within the map. If it is, it adds the pollution to the map
+        and to the total pollution.
+        """
         if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
             return
-        # print(f"added {level} at {x}, {y}")
         self.pol_map[x, y] = self.pol_map[x, y] + level
         self.total_pol = self.total_pol + level
 
     def add_pollution(self, x, y, level, spread=15):
+        """
+        This function adds pollution to the map. It spreads the pollution
+        over a certain area. The spread is a number of pixels. The pollution
+        is added to the map and to the total pollution.
+        """
         for i in range(-spread + 1, spread):
             for j in range(-spread + 1, spread):
-                self.__try_add(round(x + i), round(y + j),
-                               level / (abs(i) + abs(j) + 1))
+                self.__try_add(
+                    round(x + i), round(y + j), level / (abs(i) + abs(j) + 1)
+                )
 
     def draw_map(self, ax):
+        """
+        This function draws a subplot in matplotlib.
+        """
         ax.imshow(self.pol_map.T, interpolation="none")
         ax.set_title(f"{self.pol_type} pollution in mg")
         ax.set_xlabel("x")
         ax.set_ylabel("y")
-        ax.axis('off')
+        ax.axis("off")
 
 
 class Simulation:
@@ -70,12 +90,12 @@ class Simulation:
         self.light_duration = 10
         self.car_gen_prob = 2
         self.num_cars = 0
-        self.gen_random_data()
+        self.create_roads()
         self.pol_maps = [
             PollutionMap("co2"),
             PollutionMap("no"),
             PollutionMap("hc"),
-            PollutionMap("co")
+            PollutionMap("co"),
         ]
 
     def step(self):
@@ -83,8 +103,10 @@ class Simulation:
         self.simulate()
         self.draw()
 
-    def gen_random_data(self) -> None:
-        # Test roads
+    def create_roads(self) -> None:
+        """
+        This method generates roads for the simulation.
+        """
         self.create_road([500, 215], [0, 215])
         self.create_road([0, 285], [500, 285])
         self.create_road([215, 0], [215, 500])
@@ -94,9 +116,11 @@ class Simulation:
         self.set_trafficlights()
 
     def create_road(self, start=[0, 0], end=[0, 0], r=None):
-        """This method create a road object. It ensures that if the road
+        """
+        This method create a road object. It ensures that if the road
         intersects with another road, it will split the current road and
-        the intersecting roads both into two new roads."""
+        the intersecting roads both into two new roads.
+        """
         if r:
             new_road = r
         else:
@@ -128,7 +152,7 @@ class Simulation:
         random speed and be on a random road.
         """
 
-        if random == True:
+        if random:
             speed = randint(100, 150)
             # index 0 for right, 1 for straight, 2 for left, 3 for U-turn
             index = choice([0, 1, 2, 3], p=[0.3, 0.3, 0.3, 0.1])
@@ -136,7 +160,7 @@ class Simulation:
 
         start_road = self.roads[self.roads.index(path[0])]
 
-        if start_road.full() == True:
+        if start_road.full():
             return 1
 
         self.cars.append(Car(speed, path, color, self.roads))
@@ -156,11 +180,10 @@ class Simulation:
             done = car.move(dt)
             for i in range(4):
                 pol_type = self.pol_maps[i].pol_type
-                self.pol_maps[i].add_pollution(
-                    *car.gen_pollution(dt, pol_type))
+                self.pol_maps[i].add_pollution(*car.gen_pollution(dt, pol_type))
 
             # Delete cars if they are at the end of their path
-            if done == True:
+            if done:
                 self.cars.remove(car)
                 del car
 
@@ -246,9 +269,7 @@ class Simulation:
             pygame.draw.polygon(screen, car.color, [p1, p2, p3, p4])
 
     def draw_pol_map(self):
-        # plt.figute()
-
-        fig, axs = plt.subplots(2, 2)
+        _, axs = plt.subplots(2, 2)
         plt.suptitle("Pollution heatmap for differnet pollution types")
         for pol_map, ax in zip(self.pol_maps, axs.flatten()):
             pol_map.draw_map(ax)

@@ -1,6 +1,7 @@
 import numpy as np
 from math import dist
 
+
 class Road:
     """Define a road for the car to drive on."""
 
@@ -17,7 +18,7 @@ class Road:
         # The cars which are on the road.
         self.cars = []
 
-        self.length = dist(start,end)
+        self.length = dist(start, end)
         deltaX = end[0] - start[0]
         deltaY = end[1] - start[1]
         # in pygame, y is going down, so invert the angle
@@ -59,7 +60,7 @@ class Road:
         the road to point and return the new road from point to end.
         """
 
-        #If the split point is at the start or end, the road is not split.
+        # If the split point is at the start or end, the road is not split.
         if self.start == point or self.end == point:
             return None
 

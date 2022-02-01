@@ -37,11 +37,12 @@ class Network:
                     road_2.parents.append(road)
 
         # Make the adjacency matrix and fill it.
-        self.adj = [[0 for _ in range(0,len(self.roads))] for _ in range(0,len(self.roads))]
+        self.adj = [
+            [0 for _ in range(0, len(self.roads))] for _ in range(0, len(self.roads))
+        ]
         for road in self.roads:
             for child in road.children:
                 self.adj[self.roads.index(road)][self.roads.index(child)] = 1
-
 
     def incoming(self):
         """

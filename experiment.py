@@ -87,9 +87,7 @@ def main():
     seconds = 60
     repetitions = 10
 
-    ref_data, data, caption, ref_data_label = experiment_traffic(
-        seconds, repetitions
-    )
+    ref_data, data, caption, ref_data_label = experiment_traffic(seconds, repetitions)
 
     # create image
     plt.figure(figsize=(10, 7))
