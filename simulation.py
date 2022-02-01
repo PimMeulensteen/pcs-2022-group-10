@@ -10,7 +10,7 @@ import numpy as np
 from numpy.random import choice
 
 # Sets the number of simulation frames per second
-FPS = 60
+FPS = 30
 clock = pygame.time.Clock()
 
 pygame.init()
@@ -181,7 +181,8 @@ class Simulation:
             for i in range(4):
                 pol_type = self.pol_maps[i].pol_type
                 self.pol_maps[i].add_pollution(
-                    *car.gen_pollution(dt, pol_type))
+                    *car.gen_pollution(dt, pol_type)
+                )
 
             # Delete cars if they are at the end of their path
             if done:
@@ -200,10 +201,15 @@ class Simulation:
         if (self.timer % (FPS * self.light_duration)) == 0:
             next = 2 * ((self.timer // (FPS * self.light_duration)) % 2)
 
-            self.network.in_roads[(next - 2) % 4].green = False
-            self.network.in_roads[(next - 1) % 4].green = False
             self.network.in_roads[next].green = True
             self.network.in_roads[next + 1].green = True
+        elif ((self.timer + (4 * FPS)) % (FPS * self.light_duration)) == 0:
+            next = 2 * (
+                ((self.timer + (4 * FPS)) // (FPS * self.light_duration)) % 2
+            )
+
+            self.network.in_roads[(next - 2) % 4].green = False
+            self.network.in_roads[(next - 1) % 4].green = False
 
     def draw(self):
         screen.fill(0)
@@ -272,7 +278,7 @@ class Simulation:
     def draw_pol_map(self):
         _, axs = plt.subplots(2, 2, figsize=(8, 8))
         plt.suptitle("Pollution heatmap for differnet pollution types")
-        plt.subplots_adjust(wspace=.02, hspace=.1)
+        plt.subplots_adjust(wspace=0.02, hspace=0.1)
         for pol_map, ax in zip(self.pol_maps, axs.flatten()):
             # ax.set_aspect('equal')
             pol_map.draw_map(ax)

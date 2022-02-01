@@ -1,7 +1,7 @@
 """
 This file contains a class for a car. The car class has a
 method to move the car on a Road, to change Roads at the end of the road and
-to update the speed based on other veichles. 
+to update the speed based on other veichles.
 """
 
 from math import dist
@@ -101,7 +101,7 @@ class Car:
         self.road = self.path[self.index]
         self.pos = [self.road.start[0], self.road.start[1]]
         self.progress = 0
-        self.dir = self.road.angle == True
+        self.dir = self.road.angle
 
         # Add the car to the new road
         self.road.cars.append(self)
@@ -178,7 +178,7 @@ class Car:
 
                 if road.green and road in in_roads:
                     for car in road.cars:
-                        if dist(car.pos, car.road.end) > 80:
+                        if dist(car.pos, car.road.end) < 80:
                             return True
         return False
 
@@ -192,7 +192,10 @@ class Car:
 
         # Check the cars on the current road first.
         for car in self.road.cars:
-            if car.progress > self.progress and car.progress < nearest_progress:
+            if (
+                car.progress > self.progress
+                and car.progress < nearest_progress
+            ):
                 nearest_progress = car.progress
                 nearest = car
 
@@ -200,11 +203,12 @@ class Car:
         if nearest:
             return (
                 nearest,
-                nearest_progress * car.road.length - self.progress * self.road.length,
+                nearest_progress * car.road.length
+                - self.progress * self.road.length,
             )
 
         # Check the other roads in the path.
-        for road in self.path[self.index + 1:]:
+        for road in self.path[self.index + 1 :]:
             road_index = self.path.index(road)
             for car in road.cars:
                 if car.progress < nearest_progress:
@@ -215,7 +219,8 @@ class Car:
                 # Calculate the distance between. This is the sum of the road
                 # lengths minus the progress the cars have made.
                 distance = sum(
-                    [r.length for r in self.path[self.index: road_index]])
+                    [r.length for r in self.path[self.index : road_index]]
+                )
                 distance += nearest.progress * nearest.road.length
                 distance -= self.progress * self.road.length
                 return nearest, distance
