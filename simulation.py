@@ -61,7 +61,6 @@ class PollutionMap:
 class Simulation:
     def __init__(self) -> None:
         self.avg_FPS = 0
-        self.frames = 0
         self.cars = []
         self.roads = []
         self.network = Network()
@@ -143,11 +142,8 @@ class Simulation:
         """
         self.switch_trafficlights()
 
-        self.frames += 1
         self.timer += 1
-        dt = clock.get_time() / 1000
-        self.avg_FPS = (self.avg_FPS * (self.frames - 1) + dt) / self.frames
-        # print(len(self.cars), self.avg_FPS, self.timer / 1000)
+        dt = 1 / FPS
 
         for car in self.cars:
             car.change_speed(dt, self.network.in_roads)

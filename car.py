@@ -160,7 +160,7 @@ class Car:
                     continue
                 if road.green == True and road in in_roads:
                     for car in road.cars:
-                        if car.progress > 0.5:
+                        if dist(car.pos, car.road.end) > 80:
                             return True
         return False
 
