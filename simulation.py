@@ -68,6 +68,8 @@ class Simulation:
         self.startroads = []
         self.timer = 0
         self.light_duration = 10
+        self.car_gen_prob = 2
+        self.num_cars = 0
         self.gen_random_data()
         self.pol_map = PollutionMap()
 
@@ -158,8 +160,9 @@ class Simulation:
                 del car
 
         # Spawns random cars
-        if randint(0, 50) == 0:
+        if randint(0, 100 // self.car_gen_prob) == 0:
             self.create_car(random=True)
+            self.num_cars += 1
 
     def switch_trafficlights(self):
         """
