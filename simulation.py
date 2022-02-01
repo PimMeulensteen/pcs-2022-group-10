@@ -180,7 +180,8 @@ class Simulation:
             done = car.move(dt)
             for i in range(4):
                 pol_type = self.pol_maps[i].pol_type
-                self.pol_maps[i].add_pollution(*car.gen_pollution(dt, pol_type))
+                self.pol_maps[i].add_pollution(
+                    *car.gen_pollution(dt, pol_type))
 
             # Delete cars if they are at the end of their path
             if done:
@@ -269,9 +270,11 @@ class Simulation:
             pygame.draw.polygon(screen, car.color, [p1, p2, p3, p4])
 
     def draw_pol_map(self):
-        _, axs = plt.subplots(2, 2)
+        _, axs = plt.subplots(2, 2, figsize=(8, 8))
         plt.suptitle("Pollution heatmap for differnet pollution types")
+        plt.subplots_adjust(wspace=.02, hspace=.1)
         for pol_map, ax in zip(self.pol_maps, axs.flatten()):
+            # ax.set_aspect('equal')
             pol_map.draw_map(ax)
         plt.savefig("pollution.png")
 
