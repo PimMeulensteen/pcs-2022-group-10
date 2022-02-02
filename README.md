@@ -2,18 +2,18 @@
 
 Run the simulation with
 ```bash
-    python3 simulation.py
+python3 simulation.py
 ```
 
 Note: the simulation can be stopped when desired by closing the simulation window. A pollution map is automatically created in the figure pollution.png
 
-Run
+For the experiment resulting in exp_light_120s_20r_original.png run
 ```bash
 python3 experiment.py lights
 ```
 to run an experiment that determines the CO2 emission per car for varying traffic light durations (time lights are green before turning red).
 
-Run
+For the experiment resulting in exp_traffic_120s_20r_original.png run
 ```bash
 python3 experiment.py traffic
 ```
