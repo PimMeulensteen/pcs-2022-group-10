@@ -1,7 +1,8 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 from simulation import Simulation, pygame
+
+# Set the number of frames per second
 FPS = 30
 
 
@@ -9,7 +10,7 @@ def experiment(ref_data, change, secs, reps, filename):
     """
     Experiment to find average CO2 emission per second, each simulation
     is run for a specified number of seconds, average is taken over
-    a specified number of iterations.
+    a specified number of repetitions.
     """
     data = [[] for _ in ref_data]
     for i in range(len(ref_data)):
@@ -25,6 +26,7 @@ def experiment(ref_data, change, secs, reps, filename):
             print(j)
         print("DONE", ref_data[i])
 
+        # Write the data to a file
         with open(filename + ".txt", "a") as file:
             file.write(" ".join(str(d) for d in data[i]) + "\n")
 
@@ -32,10 +34,10 @@ def experiment(ref_data, change, secs, reps, filename):
 
 
 def save_image(ref_data, data, caption, ref_data_label, filename):
-    # create image
+    # Create image
     plt.figure(figsize=(10, 7))
 
-    # plot the data
+    # Plot the given data
     plt.bar(
         range(len(ref_data)),
         np.mean(data, 1),
@@ -61,6 +63,7 @@ def change_lightdur(sim, dur):
     different light green).
     """
     sim.light_duration = dur
+    sim.car_gen_prob = 2
 
 
 def experiment_lights(secs, reps, filename):
@@ -71,6 +74,7 @@ def experiment_lights(secs, reps, filename):
     """
     trafficlight_duration = [5 * i for i in range(1, 7)]
 
+    # Write the data to a file
     with open(filename + ".txt", "w") as file:
         file.write(" ".join(str(d) for d in trafficlight_duration) + "\n")
 
