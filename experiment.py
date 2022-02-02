@@ -16,7 +16,6 @@ def experiment(ref_data, change, secs, reps, filename):
     for i in range(len(ref_data)):
         for j in range(reps):
             sim = Simulation("co", save_pol_map=False)
-
             change(sim, ref_data[i])
 
             for _ in range(sim.FPS * secs):
@@ -104,7 +103,7 @@ def experiment_traffic(secs, reps, filename):
     entering traffic per second, thus on how busy the intersection is.
     Returns average CO2 emission per second.
     """
-    prob_car_per_step = [4 * i for i in range(1, 8)]
+    prob_car_per_step = [1 * i for i in range(1, 10)]
     prob_car_per_sec = [FPS * p // 100 for p in prob_car_per_step]
 
     with open(filename + ".txt", "w") as file:
@@ -124,11 +123,11 @@ def main():
     reps = 10
 
     # Run experiment based on time between light switches
-    # seconds = 60
-    # experiment_lights(seconds, repetitions, "exp_light_60s_10r")
+    #seconds = 60
+    #experiment_lights(seconds, reps, "exp_light_60s_10r")
 
     # Run experiment based on business of the road
-    secs = 30
+    secs = 60
     experiment_traffic(secs, reps, f"exp_traffic_{secs}s_{reps}r")
 
 

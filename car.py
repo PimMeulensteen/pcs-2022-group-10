@@ -25,17 +25,19 @@ EM_TYPES = {"no": CAR_NO, "hc": CAR_HC, "co": CAR_CO, "co2": CAR_CO2}
 
 
 class Car:
-    def __init__(self, max_speed, path, color, roads):
+    def __init__(self, max_speed, path, color):
         """Set the start parameters"""
         self.max = max_speed
         self.v = max_speed
         self.a = 0
         self.color = color
 
-        self.reaction = 0
+        self.reaction = 1.6
         self.delta = 4
-        self.max_a = 20
-        self.max_brake = 20
+
+        # A meter is 4 pixels, so times 4.
+        self.max_a = 0.73 * 4
+        self.max_brake = 1.67 * 4
 
         # Variables for the path of the car.
         self.path = path
@@ -69,7 +71,6 @@ class Car:
 
         if self.a < 0.1:
             return EM_TYPES[pol_type].decel
-
         return EM_TYPES[pol_type].cruise
 
     def gen_pollution(self, dt, pol_type="co2"):

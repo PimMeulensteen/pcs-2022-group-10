@@ -5,8 +5,7 @@ from network import Network
 import matplotlib.pyplot as plt
 import sys
 import pygame
-from random import random
-from random import randint
+from random import random, randint, uniform
 import numpy as np
 from numpy.random import choice
 
@@ -90,8 +89,8 @@ class Simulation:
         self.roads = []
         self.network = Network()
         self.timer = 0
-        self.light_duration = 10
-        self.car_gen_prob = 2
+        self.light_duration = 20
+        self.car_gen_prob = 1
         self.num_cars = 0
 
         # Create the roads.
@@ -163,14 +162,14 @@ class Simulation:
         self.simulate()
         self.draw()
 
-    def create_car(self, path=None, random=False, speed=200, color=YELLOW):
+    def create_car(self, path=None, random=False, speed=13, color=YELLOW):
         """
         Create a car object. If random is True, it will have a
         random speed and be on a random start_road.
         """
 
         if random:
-            speed = randint(100, 150)
+            speed = uniform(45, 55)
             # Index 0 for right, 1 for straight, 2 for left, 3 for U-turn.
             # Also defines the likelyhood. In this case, 10% U-turn,
             # 30% for the rest.
@@ -185,7 +184,7 @@ class Simulation:
         if path[0].full():
             return 1
 
-        self.cars.append(Car(speed, path, color, self.roads))
+        self.cars.append(Car(speed, path, color))
         self.num_cars += 1
         return 0
 
