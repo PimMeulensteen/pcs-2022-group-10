@@ -37,16 +37,22 @@ class Car:
         self.max_a = 20
         self.max_brake = 20
 
+        # Variables for the path of the car.
         self.path = path
         self.index = 0
         self.road = self.path[0]
 
+        # Variables for the position and orientation.
         self.pos = [self.road.start[0], self.road.start[1]]
-        self.progress = 0
         self.dir = self.road.angle
 
+        # How far the car is on the current road.
+        self.progress = 0
+
+        # Which car is in front
         self.in_front = self.check_in_front()
 
+        # Add the car to the list of cars on that road.
         self.road.cars.append(self)
 
     def cur_pollution(self, pol_type="co2"):
