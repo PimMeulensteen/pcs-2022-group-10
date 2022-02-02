@@ -132,8 +132,8 @@ def main():
     pygame.quit()
 
     # Specifies the number of repetitions and simulation duration
-    reps = 20
-    secs = 120
+    reps = int(sys.argv[3])
+    secs = int(sys.argv[2])
 
     # Run experiment based on time between light switches
     # or run experiment based on business of the road
