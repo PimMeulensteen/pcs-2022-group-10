@@ -88,7 +88,7 @@ def experiment_lights(secs, reps, filename):
             trafficlight_duration, change_lightdur, secs, reps, filename
         ),
         "the length of the time between switching traffic lights",
-        "traffic light duration (seconds)",
+        "Traffic light duration (seconds)",
         filename,
     )
 
@@ -122,7 +122,7 @@ def experiment_traffic(secs, reps, filename):
         prob_car_per_sec,
         experiment(prob_car_per_step, change_traffic, secs, reps, filename),
         "how busy traffic is at the intersection.",
-        "expected number of cars per second (cars)",
+        "Expected number of cars per second (cars)",
         filename,
     )
 
