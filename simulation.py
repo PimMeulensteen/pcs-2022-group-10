@@ -5,14 +5,10 @@ from network import Network
 import matplotlib.pyplot as plt
 import sys
 import pygame
+from random import random
 from random import randint
 import numpy as np
 from numpy.random import choice
-
-# The number of simulation frames per second.
-FPS = 200
-# The length of one simulation step.
-dt = 1 / FPS
 
 pygame.init()
 
@@ -83,6 +79,10 @@ class PollutionMap:
 class Simulation:
     """Define a simulation of the traffic at the intersection."""
     def __init__(self) -> None:
+        # The number of simulation frames per second.
+        self.FPS = 30
+        # The length of one simulation step.
+        self.dt = 1 / self.FPS
         self.cars = []
         self.roads = []
         self.network = Network()
@@ -186,16 +186,16 @@ class Simulation:
 
         # Update every car.
         for car in self.cars:
-            car.change_speed(dt, self.network.in_roads)
+            car.change_speed(self.dt, self.network.in_roads)
 
             # Move the car and check if the path is complete.
-            done = car.move(dt)
+            done = car.move(self.dt)
 
             # Update the pollution.
             for i in range(4):
                 pol_type = self.pol_maps[i].pol_type
                 self.pol_maps[i].add_pollution(
-                    *car.gen_pollution(dt, pol_type, 15 if pollution_map else -1)
+                    *car.gen_pollution(self.dt, pol_type, 15 if pollution_map else -1)
                 )
 
             # Delete cars if their path is complete.
@@ -204,19 +204,19 @@ class Simulation:
                 del car
 
         # Spawn new random cars.
-        if randint(0, 100 // self.car_gen_prob) == 0:
+        if random() < self.car_gen_prob / 100:
             self.create_car(random=True)
 
     def switch_trafficlights(self):
         """Switch traffic lights every self.light_duration steps."""
-        if (self.timer % (FPS * self.light_duration)) == 0:
-            next = 2 * ((self.timer // (FPS * self.light_duration)) % 2)
+        if (self.timer % (self.FPS * self.light_duration)) == 0:
+            next = 2 * ((self.timer // (self.FPS * self.light_duration)) % 2)
 
             self.network.in_roads[next].green = True
             self.network.in_roads[next + 1].green = True
-        elif ((self.timer + (4 * FPS)) % (FPS * self.light_duration)) == 0:
+        elif ((self.timer + (4 * self.FPS)) % (self.FPS * self.light_duration)) == 0:
             next = 2 * (
-                ((self.timer + (4 * FPS)) // (FPS * self.light_duration)) % 2
+                ((self.timer + (4 * self.FPS)) // (self.FPS * self.light_duration)) % 2
             )
 
             self.network.in_roads[(next - 2) % 4].green = False
