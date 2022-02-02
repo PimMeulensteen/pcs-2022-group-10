@@ -242,7 +242,7 @@ class Simulation:
             self.network.in_roads[(next - 1) % 4].green = False
 
     def draw(self):
-        "Draw the cars and the roads to the screen."
+        """Draw the cars and the roads to the screen."""
         # First make the screen black.
         screen.fill(0)
 
