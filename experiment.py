@@ -1,14 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from simulation import Simulation, pygame
-
+from sys import stdout as out
 # Set the number of frames per second
 FPS = 30
 
 
 def experiment(ref_data, change, secs, reps, filename):
     """
-    Experiment to find average CO2 emission per second, each simulation
+    Experiment to find average CO2 emission per second. Each simulation
     is run for a specified number of seconds, average is taken over
     a specified number of repetitions.
     """
@@ -23,9 +23,9 @@ def experiment(ref_data, change, secs, reps, filename):
                 sim.simulate()
 
             data[i].append(sim.pol_maps[0].total_pol / (sim.num_cars * secs))
-            print(j)
-        print("DONE", ref_data[i])
-
+            out.write(f"\rInput={ref_data[i]}: {(j + 1) / reps * 100:.0f}%")
+            out.flush()
+        print()
         # Write the data to a file
         with open(filename + ".txt", "a") as file:
             file.write(" ".join(str(d) for d in data[i]) + "\n")
@@ -121,14 +121,14 @@ def experiment_traffic(secs, reps, filename):
 
 def main():
     pygame.quit()
-    reps = 10
+    reps = 20
 
     # Run experiment based on time between light switches
     # seconds = 60
     # experiment_lights(seconds, repetitions, "exp_light_60s_10r")
 
     # Run experiment based on business of the road
-    secs = 30
+    secs = 12
     experiment_traffic(secs, reps, f"exp_traffic_{secs}s_{reps}r")
 
 
