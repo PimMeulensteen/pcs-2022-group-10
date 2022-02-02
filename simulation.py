@@ -170,7 +170,7 @@ class Simulation:
         """
 
         if random:
-            speed = uniform(45, 55)
+            speed = uniform(50, 61)
             # Index 0 for right, 1 for straight, 2 for left, 3 for U-turn.
             # Also defines the likelyhood. In this case, 10% U-turn,
             # 30% for the rest.
