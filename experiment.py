@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from simulation import Simulation, pygame
 from sys import stdout as out
+
 # Set the number of frames per second
 FPS = 30
 
@@ -16,7 +17,7 @@ def experiment(ref_data, change, secs, reps, filename):
     data = [[] for _ in ref_data]
     for i in range(len(ref_data)):
         for j in range(reps):
-            sim = Simulation("co", save_pol_map=False)
+            sim = Simulation("co2", save_pol_map=False)
             change(sim, ref_data[i])
 
             for _ in range(sim.FPS * secs):
@@ -111,7 +112,7 @@ def experiment_traffic(secs, reps, filename):
     entering traffic per second, thus on how busy the intersection is.
     Returns average CO2 emission per second.
     """
-    prob_car_per_step = [4 * i for i in range(1, 16)]
+    prob_car_per_step = [4 * i for i in range(1, 9)]
     prob_car_per_sec = [FPS * p // 100 for p in prob_car_per_step]
 
     with open(filename + ".txt", "w") as file:
