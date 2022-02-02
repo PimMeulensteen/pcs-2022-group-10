@@ -62,6 +62,9 @@ class PollutionMap:
         over a certain area. The spread is a number of pixels. The pollution
         is added to the map and to the total pollution.
         """
+        if spread == -1:
+            self.total_pol = self.total_pol + level
+
         for i in range(-spread + 1, spread):
             for j in range(-spread + 1, spread):
                 self.__try_add(
@@ -167,7 +170,7 @@ class Simulation:
         self.num_cars += 1
         return 0
 
-    def simulate(self):
+    def simulate(self, pollution_map=True):
         """
         Simulate a small step of traffic flow.
         """
@@ -182,7 +185,7 @@ class Simulation:
             for i in range(4):
                 pol_type = self.pol_maps[i].pol_type
                 self.pol_maps[i].add_pollution(
-                    *car.gen_pollution(dt, pol_type)
+                    *car.gen_pollution(dt, pol_type, 15 if pollution_map else -1)
                 )
 
             # Delete cars if they are at the end of their path

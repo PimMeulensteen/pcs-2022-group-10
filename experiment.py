@@ -20,7 +20,7 @@ def experiment(ref_data, change, secs, reps, filename):
             change(sim, ref_data[i])
 
             for _ in range(FPS * secs):
-                sim.simulate()
+                sim.simulate(pollution_map=False)
 
             data[i].append(sim.pol_maps[0].total_pol / (sim.num_cars * secs))
             print(j)
