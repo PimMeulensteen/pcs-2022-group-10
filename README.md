@@ -21,4 +21,4 @@ to run an experiment that determines the CO2 emission per car for varying levels
 
 Both experiments take approximately 5 minutes.
 
-Some non-standard libaries that are required to run: numpy, matplotlib, pygame
+# Some non-standard libaries that are required to run: numpy, matplotlib, pygame
