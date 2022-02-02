@@ -58,10 +58,13 @@ class Car:
         self.road.cars.append(self)
 
     def cur_pollution(self, pol_type="co2"):
-        # These valeus are for CO emissions. The values are in mg/sec, and based on the pape
-        # "On Road Measurements of Vehicle Tailpipe Emissions" by Frey et al.
+        """ 
+        These valeus are for CO emissions. The values are in mg/sec, and based
+        on the paper "On Road Measurements of Vehicle Tailpipe Emissions" by 
+        Frey et al.
+        """
         if self.v < 10:
-            # We consider speeds less than 10 km/h as idle
+            # We consider speeds less than 10 units/second as idle
             return EM_TYPES[pol_type].idle
 
         if self.a > 0.1:
