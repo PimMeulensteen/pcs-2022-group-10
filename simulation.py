@@ -56,10 +56,12 @@ class PollutionMap:
         """
         Add pollution to the map. Spread the pollution over a certain area.
         The spread is a number of pixels. The pollution is added to the map
-        and to the total pollution.
+        and to the total pollution. A spread of 0 means that the pollution
+        is added to the total only.
         """
-        if spread == -1:
+        if spread == 0:
             self.total_pol = self.total_pol + level
+            return
 
         for i in range(-spread + 1, spread):
             for j in range(-spread + 1, spread):
@@ -78,7 +80,8 @@ class PollutionMap:
 
 class Simulation:
     """Define a simulation of the traffic at the intersection."""
-    def __init__(self) -> None:
+
+    def __init__(self, pol_type="", save_pol_map=True) -> None:
         # The number of simulation frames per second.
         self.FPS = 30
         # The length of one simulation step.
@@ -90,12 +93,6 @@ class Simulation:
         self.light_duration = 10
         self.car_gen_prob = 2
         self.num_cars = 0
-        self.pol_maps = [
-            PollutionMap("co2"),
-            PollutionMap("no"),
-            PollutionMap("hc"),
-            PollutionMap("co"),
-        ]
 
         # Create the roads.
         self.create_roads()
@@ -104,8 +101,22 @@ class Simulation:
         self.network.add_roads(self.roads)
         self.network.calibrate()
 
-        #Start the traffic lights.
+        # Start the traffic lights.
         self.set_trafficlights()
+
+        # Prepare parameters for the polution.
+        self.pol_type = pol_type
+        if len(pol_type) > 0:
+            self.pol_maps = [PollutionMap(pol_type)]
+        else:
+            self.pol_maps = [
+                PollutionMap("co2"),
+                PollutionMap("no"),
+                PollutionMap("hc"),
+                PollutionMap("co"),
+            ]
+
+        self.pol_spread = 15 if save_pol_map else 0
 
     def create_roads(self) -> None:
         """Generate roads for the simulation."""
@@ -178,8 +189,9 @@ class Simulation:
         self.num_cars += 1
         return 0
 
-    def simulate(self, pollution_map=True):
+    def simulate(self) -> None:
         """Simulate a small step of traffic flow."""
+
         self.switch_trafficlights()
 
         self.timer += 1
@@ -192,11 +204,16 @@ class Simulation:
             done = car.move(self.dt)
 
             # Update the pollution.
-            for i in range(4):
-                pol_type = self.pol_maps[i].pol_type
-                self.pol_maps[i].add_pollution(
-                    *car.gen_pollution(self.dt, pol_type, 15 if pollution_map else -1)
+            if len(self.pol_type) > 1:
+                self.pol_maps[0].add_pollution(
+                    *car.gen_pollution(self.dt, self.pol_type), self.pol_spread
                 )
+            else:
+                for i in range(4):
+                    pol_type = ["co2", "no", "hc", "co"][i]
+                    self.pol_maps[i].add_pollution(
+                        *car.gen_pollution(self.dt, pol_type), self.pol_spread
+                    )
 
             # Delete cars if their path is complete.
             if done:
@@ -216,7 +233,8 @@ class Simulation:
             self.network.in_roads[next + 1].green = True
         elif ((self.timer + (4 * self.FPS)) % (self.FPS * self.light_duration)) == 0:
             next = 2 * (
-                ((self.timer + (4 * self.FPS)) // (self.FPS * self.light_duration)) % 2
+                ((self.timer + (4 * self.FPS)) //
+                 (self.FPS * self.light_duration)) % 2
             )
 
             self.network.in_roads[(next - 2) % 4].green = False
@@ -300,7 +318,7 @@ class Simulation:
 
 
 def main():
-    sim = Simulation()
+    sim = Simulation("co2", False)
     # Otherwise the window is immediately closed.
     while True:
         sim.step()

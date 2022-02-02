@@ -1,9 +1,8 @@
-from road import *
-from car import *
-from network import *
-from simulation import *
 
+import numpy as np
 import matplotlib.pyplot as plt
+from simulation import Simulation, pygame
+FPS = 30
 
 
 def experiment(ref_data, change, secs, reps, filename):
@@ -15,12 +14,12 @@ def experiment(ref_data, change, secs, reps, filename):
     data = [[] for _ in ref_data]
     for i in range(len(ref_data)):
         for j in range(reps):
-            sim = Simulation()
+            sim = Simulation("co", save_pol_map=False)
 
             change(sim, ref_data[i])
 
-            for _ in range(FPS * secs):
-                sim.simulate(pollution_map=False)
+            for _ in range(sim.FPS * secs):
+                sim.simulate()
 
             data[i].append(sim.pol_maps[0].total_pol / (sim.num_cars * secs))
             print(j)

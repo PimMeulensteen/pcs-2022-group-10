@@ -59,7 +59,7 @@ class Car:
         # These valeus are for CO emissions. The values are in mg/sec, and based on the pape
         # "On Road Measurements of Vehicle Tailpipe Emissions" by Frey et al.
         # TODO make this more general
-        assert pol_type in EM_TYPES.keys()
+        # assert pol_type in EM_TYPES.keys()
         if self.v < 10:
             # We consider speeds less than 10 km/h as idle
             return EM_TYPES[pol_type].idle
@@ -72,7 +72,7 @@ class Car:
 
         return EM_TYPES[pol_type].cruise
 
-    def gen_pollution(self, dt, pol_type="co2", pollution_map=True):
+    def gen_pollution(self, dt, pol_type="co2"):
         """Add pollution to the road the car is on."""
         return self.pos[0], self.pos[1], self.cur_pollution(pol_type) * dt
 
