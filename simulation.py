@@ -70,8 +70,9 @@ class PollutionMap:
 
     def draw_map(self, ax):
         """ Draws a subplot in matplotlib."""
-        ax.imshow(self.pol_map.T, interpolation="none")
-        ax.set_title(f"{self.pol_type} pollution in mg")
+        ax.imshow(self.pol_map.T, interpolation="none", cmap="hot", vmin=0)
+        ax.set_title(f"{self.pol_type} pollution")
+        ax.legend()
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.axis("off")
@@ -240,7 +241,7 @@ class Simulation:
             self.network.in_roads[(next - 1) % 4].green = False
 
     def draw(self):
-        "Draw the cars and the roads to the screen."
+        """Draw the cars and the roads to the screen."""
         # First make the screen black.
         screen.fill(0)
 
@@ -317,7 +318,7 @@ class Simulation:
 
 
 def main():
-    sim = Simulation("co2", False)
+    sim = Simulation()
     # Otherwise the window is immediately closed.
     while True:
         sim.step()

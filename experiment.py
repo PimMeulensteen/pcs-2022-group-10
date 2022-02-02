@@ -1,14 +1,15 @@
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from simulation import Simulation, pygame
-
+from sys import stdout as out
 # Set the number of frames per second
 FPS = 30
 
 
 def experiment(ref_data, change, secs, reps, filename):
     """
-    Experiment to find average CO2 emission per second, each simulation
+    Experiment to find average CO2 emission per second. Each simulation
     is run for a specified number of seconds, average is taken over
     a specified number of repetitions.
     """
@@ -22,9 +23,9 @@ def experiment(ref_data, change, secs, reps, filename):
                 sim.simulate()
 
             data[i].append(sim.pol_maps[0].total_pol / (sim.num_cars * secs))
-            print(j)
-        print("DONE", ref_data[i])
-
+            out.write(f"\rInput={ref_data[i]}: {(j + 1) / reps * 100:.0f}%")
+            out.flush()
+        print()
         # Write the data to a file
         with open(filename + ".txt", "a") as file:
             file.write(" ".join(str(d) for d in data[i]) + "\n")
@@ -41,7 +42,7 @@ def save_image(ref_data, data, caption, ref_data_label, filename):
         range(len(ref_data)),
         np.mean(data, 1),
         yerr=np.std(data, 1),
-        capsize=10,
+        capsize=5,
     )
     plt.xticks(range(len(ref_data)), ref_data)
 
@@ -62,7 +63,10 @@ def change_lightdur(sim, dur):
     different light green).
     """
     sim.light_duration = dur
+
+    # Additional settings for consistency and reproducibility
     sim.car_gen_prob = 2
+    sim.FPS = FPS
 
 
 def experiment_lights(secs, reps, filename):
@@ -71,7 +75,7 @@ def experiment_lights(secs, reps, filename):
     each light is green, before switching to another light.
     Returns average CO2 emission per second.
     """
-    trafficlight_duration = [5 * i for i in range(1, 7)]
+    trafficlight_duration = [5 + (3 * i) for i in range(11)]
 
     # Write the data to a file
     with open(filename + ".txt", "w") as file:
@@ -96,6 +100,10 @@ def change_traffic(sim, prob):
     """
     sim.car_gen_prob = prob
 
+    # Additional settings for consistency and reproducibility
+    sim.light_duration = 10
+    sim.FPS = FPS
+
 
 def experiment_traffic(secs, reps, filename):
     """
@@ -103,7 +111,7 @@ def experiment_traffic(secs, reps, filename):
     entering traffic per second, thus on how busy the intersection is.
     Returns average CO2 emission per second.
     """
-    prob_car_per_step = [1 * i for i in range(1, 10)]
+    prob_car_per_step = [4 * i for i in range(1, 16)]
     prob_car_per_sec = [FPS * p // 100 for p in prob_car_per_step]
 
     with open(filename + ".txt", "w") as file:
@@ -119,16 +127,19 @@ def experiment_traffic(secs, reps, filename):
 
 
 def main():
+    # Switches the simulation visibility off
     pygame.quit()
-    reps = 10
+
+    # Specifies the number of repetitions and simulation duration
+    reps = 20
+    secs = 120
 
     # Run experiment based on time between light switches
-    #seconds = 60
-    #experiment_lights(seconds, reps, "exp_light_60s_10r")
-
-    # Run experiment based on business of the road
-    secs = 60
-    experiment_traffic(secs, reps, f"exp_traffic_{secs}s_{reps}r")
+    # or run experiment based on business of the road
+    if len(sys.argv) > 1 and sys.argv[1] == "lights":
+        experiment_lights(secs, reps, f"exp_light_{secs}s_{reps}r")
+    else:
+        experiment_traffic(secs, reps, f"exp_traffic_{secs}s_{reps}r")
 
 
 if __name__ == "__main__":
