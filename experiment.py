@@ -137,7 +137,7 @@ def main():
 
     # Run experiment based on time between light switches
     # or run experiment based on business of the road
-    if len(sys.argv) > 1 and sys.argv[1] == "lights":
+    if len(sys.argv) > 1 and sys.argv[1] == "light":
         experiment_lights(secs, reps, f"exp_light_{secs}s_{reps}r")
     else:
         experiment_traffic(secs, reps, f"exp_traffic_{secs}s_{reps}r")
