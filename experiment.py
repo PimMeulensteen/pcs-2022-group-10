@@ -121,15 +121,15 @@ def experiment_traffic(secs, reps, filename):
 
 def main():
     pygame.quit()
-    repetitions = 10
+    reps = 10
 
     # Run experiment based on time between light switches
     # seconds = 60
     # experiment_lights(seconds, repetitions, "exp_light_60s_10r")
 
     # Run experiment based on business of the road
-    seconds = 30
-    experiment_traffic(seconds, repetitions, "exp_traffic_30s_10r")
+    secs = 30
+    experiment_traffic(secs, reps, f"exp_traffic_{secs}s_{reps}r")
 
 
 if __name__ == "__main__":
