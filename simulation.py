@@ -164,6 +164,7 @@ class Simulation:
             return 1
 
         self.cars.append(Car(speed, path, color, self.roads))
+        self.num_cars += 1
         return 0
 
     def simulate(self):
@@ -192,7 +193,6 @@ class Simulation:
         # Spawns random cars
         if randint(0, 100 // self.car_gen_prob) == 0:
             self.create_car(random=True)
-            self.num_cars += 1
 
     def switch_trafficlights(self):
         """
