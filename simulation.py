@@ -35,7 +35,7 @@ class PollutionMap:
     and keep track of the pollution.
     """
 
-    def __init__(self, pol_type="co2") -> None:
+    def __init__(self, pol_type="CO2") -> None:
         """Sets the pollution to plot."""
         self.pol_map = np.zeros(SIZE)
         self.total_pol = 0
@@ -75,12 +75,13 @@ class PollutionMap:
                     for i in range(-spread + 1, spread):
                         for j in range(-spread + 1, spread):
                             self.__try_add(
-                                round(x + i), round(y + j), old_map[x, y] /
-                                (abs(i) + abs(j) + 1)
+                                round(x + i),
+                                round(y + j),
+                                old_map[x, y] / (abs(i) + abs(j) + 1),
                             )
 
     def draw_map(self, ax, spread=15):
-        """ Draws a subplot in matplotlib."""
+        """Draws a subplot in matplotlib."""
         if spread > 0:
             self.__spread_map(spread)
             normed = self.pol_map / self.pol_map.max()
@@ -126,10 +127,10 @@ class Simulation:
             self.pol_maps = [PollutionMap(pol_type)]
         else:
             self.pol_maps = [
-                PollutionMap("co2"),
-                PollutionMap("no"),
-                PollutionMap("hc"),
-                PollutionMap("co"),
+                PollutionMap("CO2"),
+                PollutionMap("NO"),
+                PollutionMap("HC"),
+                PollutionMap("CO"),
             ]
 
         self.pol_spread = 15 if save_pol_map else 0
@@ -225,7 +226,7 @@ class Simulation:
                 )
             else:
                 for i in range(4):
-                    pol_type = ["co2", "no", "hc", "co"][i]
+                    pol_type = ["CO2", "NO", "HC", "CO"][i]
                     self.pol_maps[i].add_pollution(
                         *car.gen_pollution(self.dt, pol_type), self.pol_spread
                     )

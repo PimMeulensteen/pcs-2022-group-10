@@ -21,7 +21,7 @@ CAR_NO = EmmissionType(0.06, 1.4, 0.52, 1.1)
 CAR_HC = EmmissionType(0.25, 1, 0.36, 0.6)
 CAR_CO = EmmissionType(1.5, 23, 5.5, 11)
 CAR_CO2 = EmmissionType(1.7, 6.4, 2.6, 4.1)
-EM_TYPES = {"no": CAR_NO, "hc": CAR_HC, "co": CAR_CO, "co2": CAR_CO2}
+EM_TYPES = {"NO": CAR_NO, "HC": CAR_HC, "CO": CAR_CO, "CO2": CAR_CO2}
 
 
 class Car:
@@ -57,7 +57,7 @@ class Car:
         # Add the car to the list of cars on that road.
         self.road.cars.append(self)
 
-    def cur_pollution(self, pol_type="co2"):
+    def cur_pollution(self, pol_type="CO2"):
         """
         These valeus are for CO emissions. The values are in mg/sec, and based
         on the paper "On Road Measurements of Vehicle Tailpipe Emissions" by
@@ -74,7 +74,7 @@ class Car:
             return EM_TYPES[pol_type].decel
         return EM_TYPES[pol_type].cruise
 
-    def gen_pollution(self, dt, pol_type="co2"):
+    def gen_pollution(self, dt, pol_type="CO2"):
         """Add pollution to the road the car is on."""
         return self.pos[0], self.pos[1], self.cur_pollution(pol_type) * dt
 
@@ -216,7 +216,7 @@ class Car:
             )
 
         # Check the other roads in the path.
-        for road in self.path[self.index + 1:]:
+        for road in self.path[self.index + 1 :]:
             road_index = self.path.index(road)
             for car in road.cars:
                 if car.progress < nearest_progress:
@@ -227,7 +227,7 @@ class Car:
                 # Calculate the distance between. This is the sum of the road
                 # lengths minus the progress the cars have made.
                 distance = sum(
-                    [r.length for r in self.path[self.index: road_index]]
+                    [r.length for r in self.path[self.index : road_index]]
                 )
                 distance += nearest.progress * nearest.road.length
                 distance -= self.progress * self.road.length

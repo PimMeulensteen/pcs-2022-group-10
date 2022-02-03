@@ -17,7 +17,7 @@ def experiment(ref_data, change, secs, reps, filename):
     data = [[] for _ in ref_data]
     for i in range(len(ref_data)):
         for j in range(reps):
-            sim = Simulation("co2", save_pol_map=False)
+            sim = Simulation("CO2", save_pol_map=False)
             change(sim, ref_data[i])
 
             for _ in range(sim.FPS * secs):
