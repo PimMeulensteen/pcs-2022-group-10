@@ -23,7 +23,7 @@ def experiment(ref_data, change, secs, reps, filename):
             for _ in range(sim.FPS * secs):
                 sim.simulate()
 
-            data[i].append(sim.pol_maps[0].total_pol / (sim.ages / FPS))
+            data[i].append(sim.pol_maps[0].total_pol / sim.num_cars)
             out.write(f"\rInput={ref_data[i]}: {(j + 1) / reps * 100:.0f}%")
             out.flush()
         print()
@@ -51,7 +51,7 @@ def save_image(ref_data, data, caption, ref_data_label, filename):
         "The average CO2 emission based on " + caption,
     )
     plt.xlabel(ref_data_label)
-    plt.ylabel("CO2 emission per car (mg/second)")
+    plt.ylabel("CO2 emission per car (mg)")
 
     # plt.show()
     plt.savefig(filename + ".png")
@@ -66,7 +66,7 @@ def change_lightdur(sim, dur):
     sim.light_duration = dur
 
     # Additional settings for consistency and reproducibility
-    sim.car_gen_prob = 2
+    sim.car_gen_prob = 0.1
     sim.FPS = FPS
 
 
@@ -76,7 +76,7 @@ def experiment_lights(secs, reps, filename):
     each light is green, before switching to another light.
     Returns average CO2 emission per second.
     """
-    trafficlight_duration = [10 + (1 * i) for i in range(11)]
+    trafficlight_duration = [5 + (0.5 * i) for i in range(21)]
 
     # Write the data to a file
     with open(filename + ".txt", "w") as file:
@@ -126,10 +126,9 @@ def experiment_traffic(secs, reps, filename):
         filename,
     )
 
-
 def main():
     # Switches the simulation visibility off
-    # pygame.quit()
+    pygame.quit()
 
     # Specifies the number of repetitions and simulation duration
     reps = int(sys.argv[3])

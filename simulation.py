@@ -105,11 +105,9 @@ class Simulation:
         self.roads = []
         self.network = Network()
         self.timer = 0
-        self.light_duration = 20
+        self.light_duration = 10
         self.car_gen_prob = 1
         self.num_cars = 0
-
-        self.ages = 0
 
         # Create the roads.
         self.create_roads()
@@ -212,7 +210,6 @@ class Simulation:
         self.switch_trafficlights()
 
         self.timer += 1
-        self.ages += len(self.cars)
 
         # Update every car.
         for car in self.cars:
