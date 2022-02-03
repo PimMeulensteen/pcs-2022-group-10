@@ -66,7 +66,7 @@ def change_lightdur(sim, dur):
     sim.light_duration = dur
 
     # Additional settings for consistency and reproducibility
-    sim.car_gen_prob = 0.1
+    sim.car_gen_prob = 10/9
     sim.FPS = FPS
 
 
@@ -76,14 +76,14 @@ def experiment_lights(secs, reps, filename):
     each light is green, before switching to another light.
     Returns average CO2 emission per second.
     """
-    trafficlight_duration = [5 + (0.5 * i) for i in range(21)]
+    trafficlight_duration = [5 + (1 * i) for i in range(21)]
 
     # Write the data to a file
     with open(filename + ".txt", "w") as file:
         file.write(" ".join(str(d) for d in trafficlight_duration) + "\n")
 
     save_image(
-        trafficlight_duration,
+        [x - 4 for x in trafficlight_duration],
         experiment(
             trafficlight_duration, change_lightdur, secs, reps, filename
         ),
@@ -102,7 +102,7 @@ def change_traffic(sim, prob):
     sim.car_gen_prob = prob
 
     # Additional settings for consistency and reproducibility
-    sim.light_duration = 10
+    sim.light_duration = 2
     sim.FPS = FPS
 
 
@@ -112,17 +112,17 @@ def experiment_traffic(secs, reps, filename):
     entering traffic per second, thus on how busy the intersection is.
     Returns average CO2 emission per second.
     """
-    prob_car_per_step = [4 * i for i in range(1, 9)]
+    prob_car_per_step = [5/18 + 1/24 * i for i in range(21)]
     prob_car_per_sec = [FPS * p // 100 for p in prob_car_per_step]
 
     with open(filename + ".txt", "w") as file:
         file.write(" ".join(str(d) for d in prob_car_per_sec) + "\n")
 
     save_image(
-        prob_car_per_sec,
+        prob_car_per_sec * 60,
         experiment(prob_car_per_step, change_traffic, secs, reps, filename),
         "how busy traffic is at the intersection.",
-        "Expected number of cars per second (cars)",
+        "Expected number of cars per minute (cars)",
         filename,
     )
 
