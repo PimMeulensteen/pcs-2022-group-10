@@ -23,7 +23,7 @@ def experiment(ref_data, change, secs, reps, filename):
             for _ in range(sim.FPS * secs):
                 sim.simulate()
 
-            data[i].append(sim.pol_maps[0].total_pol / (sim.num_cars * secs))
+            data[i].append(sim.pol_maps[0].total_pol / (sim.ages / FPS))
             out.write(f"\rInput={ref_data[i]}: {(j + 1) / reps * 100:.0f}%")
             out.flush()
         print()
@@ -76,7 +76,7 @@ def experiment_lights(secs, reps, filename):
     each light is green, before switching to another light.
     Returns average CO2 emission per second.
     """
-    trafficlight_duration = [5 + (3 * i) for i in range(11)]
+    trafficlight_duration = [10 + (1 * i) for i in range(11)]
 
     # Write the data to a file
     with open(filename + ".txt", "w") as file:
@@ -129,7 +129,7 @@ def experiment_traffic(secs, reps, filename):
 
 def main():
     # Switches the simulation visibility off
-    pygame.quit()
+    #pygame.quit()
 
     # Specifies the number of repetitions and simulation duration
     reps = int(sys.argv[3])

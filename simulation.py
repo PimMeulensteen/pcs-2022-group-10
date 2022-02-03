@@ -108,6 +108,8 @@ class Simulation:
         self.car_gen_prob = 1
         self.num_cars = 0
 
+        self.ages = 0
+
         # Create the roads.
         self.create_roads()
 
@@ -209,14 +211,13 @@ class Simulation:
         self.switch_trafficlights()
 
         self.timer += 1
+        self.ages += len(self.cars)
 
         # Update every car.
         for car in self.cars:
             car.change_speed(self.dt, self.network.in_roads)
-
             # Move the car and check if the path is complete.
             done = car.move(self.dt)
-
             # Update the pollution.
             if len(self.pol_type) > 1:
                 self.pol_maps[0].add_pollution(
@@ -228,7 +229,6 @@ class Simulation:
                     self.pol_maps[i].add_pollution(
                         *car.gen_pollution(self.dt, pol_type), self.pol_spread
                     )
-
             # Delete cars if their path is complete.
             if done:
                 self.cars.remove(car)
@@ -239,17 +239,20 @@ class Simulation:
             self.create_car(random=True)
 
     def switch_trafficlights(self):
-        """Switch traffic lights every self.light_duration steps."""
-        if (self.timer % (self.FPS * self.light_duration)) == 0:
-            next = 2 * ((self.timer // (self.FPS * self.light_duration)) % 2)
+        """
+        Switch between turning the horizontal or the vertical traffic
+        lights green every n = light_duration number of seconds. There
+        is a small buffer, such that 4 seconds before turning the next
+        set green, the previous one are turned red.
+        """
+        dur = int(self.FPS * self.light_duration)
+        if (self.timer % dur) == 0:
+            next = 2 * ((self.timer // dur) % 2)
 
             self.network.in_roads[next].green = True
             self.network.in_roads[next + 1].green = True
-        elif ((self.timer + (4 * self.FPS)) % (self.FPS * self.light_duration)) == 0:
-            next = 2 * (
-                ((self.timer + (4 * self.FPS)) //
-                 (self.FPS * self.light_duration)) % 2
-            )
+        elif ((self.timer + (4 * self.FPS)) % dur) == 0:
+            next = 2 * (((self.timer + (4 * self.FPS)) // dur) % 2)
 
             self.network.in_roads[(next - 2) % 4].green = False
             self.network.in_roads[(next - 1) % 4].green = False
