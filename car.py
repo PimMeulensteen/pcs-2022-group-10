@@ -58,9 +58,9 @@ class Car:
         self.road.cars.append(self)
 
     def cur_pollution(self, pol_type="co2"):
-        """ 
+        """
         These valeus are for CO emissions. The values are in mg/sec, and based
-        on the paper "On Road Measurements of Vehicle Tailpipe Emissions" by 
+        on the paper "On Road Measurements of Vehicle Tailpipe Emissions" by
         Frey et al.
         """
         if self.v < 10:

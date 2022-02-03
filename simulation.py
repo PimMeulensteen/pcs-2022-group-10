@@ -94,6 +94,8 @@ class Simulation:
         self.car_gen_prob = 1
         self.num_cars = 0
 
+        self.ages = 0
+
         # Create the roads.
         self.create_roads()
 
@@ -195,14 +197,13 @@ class Simulation:
         self.switch_trafficlights()
 
         self.timer += 1
+        self.ages += len(self.cars)
 
         # Update every car.
         for car in self.cars:
             car.change_speed(self.dt, self.network.in_roads)
-
             # Move the car and check if the path is complete.
             done = car.move(self.dt)
-
             # Update the pollution.
             if len(self.pol_type) > 1:
                 self.pol_maps[0].add_pollution(
@@ -214,7 +215,6 @@ class Simulation:
                     self.pol_maps[i].add_pollution(
                         *car.gen_pollution(self.dt, pol_type), self.pol_spread
                     )
-
             # Delete cars if their path is complete.
             if done:
                 self.cars.remove(car)
