@@ -105,7 +105,7 @@ class Simulation:
         self.roads = []
         self.network = Network()
         self.timer = 0
-        self.light_duration = 10
+        self.light_duration = 2
         self.car_gen_prob = 10/9
         self.num_cars = 0
 

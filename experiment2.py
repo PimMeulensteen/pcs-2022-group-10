@@ -102,7 +102,7 @@ def change_traffic(sim, prob):
     sim.car_gen_prob = prob
 
     # Additional settings for consistency and reproducibility
-    sim.light_duration = 2
+    sim.light_duration = 8
     sim.FPS = FPS
 
 
@@ -113,13 +113,13 @@ def experiment_traffic(secs, reps, filename):
     Returns average CO2 emission per second.
     """
     prob_car_per_step = [5/18 + 1/24 * i for i in range(21)]
-    prob_car_per_sec = [FPS * p // 100 for p in prob_car_per_step]
+    cars_per_min = [round(FPS * p * 60 / 100,2) for p in prob_car_per_step]
 
     with open(filename + ".txt", "w") as file:
-        file.write(" ".join(str(d) for d in prob_car_per_sec) + "\n")
+        file.write(" ".join(str(d) for d in cars_per_min) + "\n")
 
     save_image(
-        prob_car_per_sec * 60,
+        cars_per_min,
         experiment(prob_car_per_step, change_traffic, secs, reps, filename),
         "how busy traffic is at the intersection.",
         "Expected number of cars per minute (cars)",
@@ -138,7 +138,7 @@ def main():
     # or run experiment based on business of the road
     if len(sys.argv) > 1 and sys.argv[1] == "light":
         experiment_lights(secs, reps, f"exp_light_{secs}s_{reps}r")
-    else:
+    elif len(sys.argv) > 1 and sys.argv[1] == "traffic":
         experiment_traffic(secs, reps, f"exp_traffic_{secs}s_{reps}r")
 
 
