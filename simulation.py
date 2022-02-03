@@ -46,6 +46,7 @@ class PollutionMap:
         Check if the position is within the map.
         If it is, it add the pollution to the map and to the total pollution.
         """
+        x, y = int(x), int(y)
         if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
             return
         self.pol_map[x, y] = self.pol_map[x, y] + level
@@ -61,18 +62,31 @@ class PollutionMap:
         if spread == 0:
             self.total_pol = self.total_pol + level
             return
+        self.__try_add(x, y, level)
 
-        for i in range(-spread + 1, spread):
-            for j in range(-spread + 1, spread):
-                self.__try_add(
-                    round(x + i), round(y + j), level / (abs(i) + abs(j) + 1)
-                )
+    def __spread_map(self, spread=15):
+        old_map = self.pol_map.copy()
+        new_map = np.zeros(SIZE)
+        self.pol_map = new_map
 
-    def draw_map(self, ax):
+        for x in range(WIDTH):
+            for y in range(HEIGHT):
+                if old_map[x, y] > 0:
+                    for i in range(-spread + 1, spread):
+                        for j in range(-spread + 1, spread):
+                            self.__try_add(
+                                round(x + i), round(y + j), old_map[x, y] /
+                                (abs(i) + abs(j) + 1)
+                            )
+
+    def draw_map(self, ax, spread=15):
         """ Draws a subplot in matplotlib."""
-        ax.imshow(self.pol_map.T, interpolation="none", cmap="hot", vmin=0)
+        if spread > 0:
+            self.__spread_map(spread)
+            normed = self.pol_map / self.pol_map.max()
+
+        ax.imshow(normed.T, interpolation="none", cmap="hot", vmin=0)
         ax.set_title(f"{self.pol_type} pollution")
-        ax.legend()
         ax.set_xlabel("x")
         ax.set_ylabel("y")
         ax.axis("off")
@@ -313,7 +327,7 @@ class Simulation:
         plt.subplots_adjust(wspace=0.02, hspace=0.1)
         for pol_map, ax in zip(self.pol_maps, axs.flatten()):
             # ax.set_aspect('equal')
-            pol_map.draw_map(ax)
+            pol_map.draw_map(ax, self.pol_spread)
         plt.savefig("pollution.png")
 
 
